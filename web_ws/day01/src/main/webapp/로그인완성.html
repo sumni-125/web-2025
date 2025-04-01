@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+
+        /*
+           태그 선택자
+           클래스 선택자  : 특정클래스를 가진 요소(태그)를 선택함, 중복가능   
+           선택방법 : .클래스이름
+        */
+        .wrap{
+             width: 400px ;
+             padding: 20px;
+             border: 1px solid black;    
+             margin: 0  auto;         
+        }
+
+        .img_wrap{
+            width: 200px ;
+            height: 200px;
+            border:1px solid black;
+            margin: 0 auto;
+            
+            background-image: url(https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDA3MTBfMTM1%2FMDAxNTk0MzU2OTU3NDE1.kwHVEQ7goqvGgtT13CykplFqFHdatF3Px7Jc6hJV4jIg.wPKKyErswASi4HZ5FkuJkDneCyvGBLJLtxAHc3-bvHsg.PNG.daeguart3%2Fcafe-151346_1280.png&type=a340);
+            background-size: cover;
+            background-position: center;
+
+        }
+
+
+        .info_wrap{
+            width: 300px;
+            padding: 20px;
+            border: 1px solid black;           
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+
+
+         input{
+            width: 97%;
+            height: 30px;
+            margin-top: 5px;
+         }
+
+         button{
+            width: 100%;
+            margin-top: 10px;
+            height: 40px;
+            border:0px;
+            border-radius: 5px;
+            background-color: #e1a4a4;
+            
+         }
+
+     
+
+
+    </style>
+</head>
+<body>
+
+    <h2> 공간태그 : div </h2>
+
+    <!-- 공간을 만들 때 사용하는 태그 -->
+
+    <!--로그인 전체 영역-->
+    <form  action="/day01/login"  method="post">
+    <div class="wrap">
+        <!--로그인 이미지영역-->
+        <div class="img_wrap">            
+        </div>
+        <!-- 로그인 정보 영역-->
+        <div class="info_wrap">
+            <input type="text" name="id">
+            <input type="text" name="pw">
+            <button>로그인</button>
+        </div>
+    </div>
+    </form>
+    
+</body>
+</html>

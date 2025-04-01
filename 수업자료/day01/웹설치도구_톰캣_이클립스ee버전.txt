@@ -1,0 +1,36 @@
+
+
+이클립스 다운로드
+https://www.eclipse.org/downloads/packages/
+
+ -window용 다운로드  (64-bit Windows zip (pgp, sha512)   ->다운로드 받기 ( tools 폴더) 
+ -mac (    macOS x86_64 ->다운로드  )
+
+
+
+톰켓 다운로드
+https://tomcat.apache.org/download-90.cgi
+
+- 64-bit wondows.zip   =>window 사용자 다운로드 
+ (다운로드 받은 파일명 짧게 변경: ee )
+
+- tar.gz (pgp, sha512)   => 맥 사용자 다운로드 
+
+
+
+Tomcat(톰켓) 웹서버 실행과 종료 방법
+윈도우 사용자>>
+     > cd C:\apache-tomcat-9.0.50\bin
+     > startup.bat  <--- tomcat실행  
+     > shutdown.bat <--- tomcat종료  
+
+
+
+
+맥 사용자 >>
+       $ cd ~/apache-tomcat-9.0.50/bin   <--- tomcat이 설치된 경로의 bin디렉토리로 이동
+       $ ./startup.sh  <--- tomcat실행  
+       $ ./shutdown.sh <--- tomcat종료   
+
+
+
