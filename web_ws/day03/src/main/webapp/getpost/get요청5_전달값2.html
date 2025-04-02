@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+<script>
+function getHello(){
+	//alert("dfkdfd");
+	
+	let su =document.getElementById("su").value;
+	alert( su);
+	window.location.href="/day03/hello?su=" + su;
+}
+</script>
+</head>
+<body>
+
+
+<input type="text" id="su">
+<button onclick="getHello()">hello Servelt </button>
+</body>
+</html>

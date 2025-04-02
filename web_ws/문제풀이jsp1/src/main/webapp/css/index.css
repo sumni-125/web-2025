@@ -1,0 +1,28 @@
+@CHARSET "UTF-8";
+
+header{
+	padding:10px;
+	text-align: center;
+	background-color: blue;
+}
+
+nav{
+	padding:10px; 
+	background-color: gray;
+}
+nav a{
+	text-decoration:  none;
+	color: white;
+	padding-right: 30px;
+}
+
+section{	
+	height: 600px;
+	padding: 20px;
+	
+}
+footer{
+	padding:10px;
+	text-align: center;
+	background-color: blue;
+}
