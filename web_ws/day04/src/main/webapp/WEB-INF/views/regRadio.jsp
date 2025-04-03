@@ -1,0 +1,39 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script>
+	function check(){
+		let frm = document.frm;
+		let gender  = frm.gender ;		
+		let flag=false;  
+	  
+		for( let i=0; i<gender.length ; i++){
+			if( gender[i].checked){
+				flag=true;
+				break;
+			}
+		}		
+		
+	    if (!flag) {
+	        alert("성별을 선택해 주세요!");
+	        return false;
+	    } else {
+	        return true;
+	    }
+	}
+</script>
+</head>
+<body>	
+	<form name="frm" action="/day04/regRadio"  method="post"   onsubmit="return check()">
+		<label><input type="radio" value="M" name="gender">남성</label>
+        <label><input type="radio" value="W" name="gender">여성</label>
+        <label><input type="radio" value="O" name="gender">기타</label>        
+		<button >전송</button>
+	</form>
+
+</body>
+</html>
