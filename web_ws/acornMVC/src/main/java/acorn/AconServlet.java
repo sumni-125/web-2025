@@ -19,7 +19,7 @@ public class AconServlet   extends  HttpServlet{
 		//데이타 만들기
 		//Model => 서비스 , DAO
 		AcornService  service  = new AcornService();
-		//ArrayList<Acorn> list  =service.getMemberListTmp();
+		//ArrayList<Acorn> list  =service.getMemberListTmp();s
 		ArrayList<Acorn> list  =service.getMemberListReal();
 		System.out.println( list.get(0).getId());
 		
