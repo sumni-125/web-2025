@@ -1,0 +1,4 @@
+GET /regReview HTTP/1.1 =>요청줄
+Host: localhost  =>요청헤더
+
+{id=01, content=촉촉해요 } =>요청바디

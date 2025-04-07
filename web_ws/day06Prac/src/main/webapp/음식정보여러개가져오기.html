@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+<script>
+
+function getData(){
+	
+	//alert("dd")
+	//0) 함수가 잘 동작하는지 확인(버튼클릭시)
+	//1) 서버와 통신해서 데이터만 받아오기
+	//2) 데이터를 사용해서 화면의 일부를 갱신한다
+	
+	//$.ajax(); 제이쿼리의 ajax()메서드 호출 => 서버와 통신함
+	//매개변수로 서버와 통신에 관련된 정보를 제공한다
+	
+	$.ajax({
+		type:"get",
+		url:"/day06Prac/foodDataList",
+		success : function(aaa){
+			//console.log(aaa);
+			let result = document.getElementById("result");
+			let str="<ul>";
+			for(let i=0;i<aaa.length;i++){
+				let foodItem = aaa[i];
+				console.log("item: ");
+				console.log(foodItem);
+				
+				str += "<li>"+foodItem.name+foodItem.price+"</li>";
+				
+			}
+			str+="</ul>";
+			
+			result.innerHTML  = str;
+		},
+		error: function(err){
+			console.log(err);
+		}
+	});
+	
+	
+}
+
+</script>
+
+
+</head>
+<body>
+
+<div id="result"></div>
+<button onclick="getData()">submit</button>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+<script>
+function getData(){
+	alert("dkdk");
+	//window.location.href="/day06Prac/foodInfo1";=>화면전환이 됨
+	
+	//화면전환 없이 데이터만 받아오기
+	
+	//$.ajax();	// 서버와 통신해라 메서드를 호출하는 것!!!
+				// 통신에 필요한 정보를 매개변수로 제공한다
+				// 객체(json)형식으로 서버와 통신에 필요힌 데이터를 제공함, 이름들이 약속되어 있다
+	$.ajax({
+		type:"get",
+		url:"/day06Prac/foodInfo1",
+		success:function(data){	
+			console.log(data);
+			
+			let result = document.getElementById("result");
+			result.innerHTML = data.name +" "+data.price;
+			
+		},	//콜백함수: 서버가 통신 후 성공하면 실행해주는 함수
+		error: function(err){
+			alert("요청에 실패했습니다");
+			console.log(err);
+		}
+	});
+}
+
+</script>
+
+</head>
+<body>
+
+<div id = "result"></div>
+
+<button onclick="getData()">클릭</button>
+</body>
+</html>

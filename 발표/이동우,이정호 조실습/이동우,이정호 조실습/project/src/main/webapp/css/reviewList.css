@@ -1,0 +1,142 @@
+@charset "UTF-8";
+
+body {
+   font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+/*헤더*/
+.header {
+    text-align: center;
+    padding: 20px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 24px;
+}
+
+.btn-group {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-group button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.btn-group button:hover {
+    background-color: #45a049;
+}
+
+/*리뷰 div*/
+.review-list {
+    width: 80%;
+    margin: 20px auto;
+}
+
+/*내비바*/
+.nav-btn{
+	display: flex;
+	justify-content: space-between;
+}
+
+/*리뷰 작성 버튼*/
+.writeBtn, .starBtn, .dateBtn{
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 0px 0px 20px 0px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+.writeBtn{
+	background-color: silver;
+}
+.writeBtn:hover{
+	background: #5c67f2;
+}
+
+/*별점순 버튼*/
+.starBtn{
+	background-color: gold;
+}
+.starBtn:hover{
+	background-color: orange;
+}
+
+/*날짜순 버튼*/
+.dateBtn{
+	background-color: purple;
+}
+.dateBtn:hover{
+	background-color: violet;
+}
+
+/*리뷰 목록*/
+.review-item {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.review-title {
+    font-weight: bold;
+    color: #333;
+    flex: 2;
+}
+
+.review-content {
+    color: #666;
+    flex: 3;
+    font-size: 14px;
+}
+
+.review-rating {
+    color: #FFD700;
+    flex: 1;
+}
+
+.review-user, .review-date {
+    color: #777;
+    flex: 1;
+}
+
+.edit-btn, .delete-btn {
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    margin-left: 5px;
+}
+
+.edit-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #2980b9;
+}
+
+.delete-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+}

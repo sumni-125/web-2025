@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script>
+	
+	function send(){
+		 		
+		// $.ajax();  (  ) 인자정보를  객체타입으로 제공함 		
+		$.ajax(  {
+			type: "get",			 
+			url: "/ajaxSample/food2"  ,			
+			success: function( data){
+				alert(data);				
+				console.log(data);				 				
+				 $("#result").html(  data.name   + data.price );				
+			},
+			error: function(err){		
+				 //
+				 alert("요청에 실패했습니다");
+			}
+		 }
+	   );     
+		
+	}
+</script>
+
+</head>
+<body>
+	
+	<button onclick="send()">음식정보</button>
+	
+	<div id="result">  </div>
+
+</body>
+</html>

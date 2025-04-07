@@ -1,0 +1,112 @@
+@charset "UTF-8";
+
+/* 전체 페이지 기본 설정 */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+/* 제목 스타일 */
+h2 {
+    text-align: center;
+    padding: 20px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 24px;
+    margin: 0;
+}
+
+/* 예약현황 링크 */
+/* .resa {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.resa a {
+    color: #4CAF50;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 16px;
+} */
+
+/* .resa a:hover {
+    text-decoration: underline;
+} */
+
+table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+/* 좌석 상태별 색상 */
+.g {  /* 예약 가능 좌석 */
+    background-color: #e8f5e9;
+}
+
+.u {  /* 예약된 좌석 */
+    background-color: #fbe9e7;
+}
+
+
+
+/* 좌석 번호 input */
+input	 {
+    text-align: center;
+    width: 80px;
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 8px;
+}
+
+/* 버튼 스타일 */
+button {
+    width: 90px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 16px;
+    background-color: #4CAF50;	
+}
+
+.reserv{
+    background-color: #4CAF50;	
+	
+}
+
+.reserv:hover {
+    background-color: #45a049;
+}
+
+
+.cancle{
+	background-color: #e74c3c;
+	
+	
+}
+
+.cancle:hover{
+	background-color: #c0392b;
+	
+}

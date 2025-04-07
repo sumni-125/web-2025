@@ -1,0 +1,28 @@
+서버로 보낸 HTTP 요청의 바디를 읽어와야 할 경우,
+특히 JSON, XM  데이터를 처리하려면
+HttpServletRequest 객체의 getInputStream() 메서드를 사용해야 함
+
+파일 업로드, 바이너리 데이터, JSON, XML 등의  데이터를 클라이언트로 부터 읽어와야 할 경우 사용 
+ 
+ 
+
+public class MyServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    
+        StringBuilder requestBody = new StringBuilder();
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                requestBody.append(line);
+            }
+        }
+        
+        // requestBody에는 요청 바디의 내용이 문자열로 저장됨
+        System.out.println("Request Body: " + requestBody.toString());
+        
+        // 이후 JSON 처리를 하거나 다른 로직을 수행
+    }
+}
+ 

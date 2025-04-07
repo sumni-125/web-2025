@@ -1,0 +1,11 @@
+create table foodtbl (
+  name varchar2(30) , 
+  price varchar2(10)
+);
+ 
+insert into foodtbl values( '스테이크' , '11000');
+insert into foodtbl values( '오므라이스' , '9000');
+insert into foodtbl values( '불고기덮밥' , '12000');
+insert into foodtbl values( '새우우동' , '8000');
+insert into foodtbl values( '돈까스카레' , '9000');
+insert into foodtbl values( '낙지덮밥' , '11000');
