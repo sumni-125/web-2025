@@ -1,0 +1,28 @@
+
+예시1)
+
+/admin/*	         
+
+ =>
+/admin/list	 
+/admin/user/edit	 
+
+
+
+예시2)
+
+*.do
+
+/member/list.do	 
+/user/login.do	 
+/product/save.do 
+/hello.do?name=kim
+
+
+예시)
+/*
+
+모든 서블릿요청이 적용됨
+(설정부분: 한글설정)
+request.setCharacterEncoding("UTF-8");
+response.setContentType("text/html;charset=UTF-8");	

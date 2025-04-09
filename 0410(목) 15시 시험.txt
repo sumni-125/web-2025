@@ -1,0 +1,12 @@
+0410(목) 15시 시험
+
+MVC :조회하기 요청
+
+서블릿
+뷰(약간의 css나올 수 있음)
+모델 - 서비스(자바파일), DAO(데이터베이스 작업관련), DTO(객체생성용)
+
+dao - getconnection메서드 제공, 
+
+arraylist<***> selectall(){  }
+selectall부터는 만들어야함

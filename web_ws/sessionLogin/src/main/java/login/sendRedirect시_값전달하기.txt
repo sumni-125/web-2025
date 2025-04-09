@@ -1,0 +1,22 @@
+
+
+response.sendRedirect();  // 브라우저에게 해당 주소로 요청하는 응답  ( 이 주소로 다시  요청해 !!!)
+             
+1) get요청으로 이루어짐  (대상 요청이 get요청이 구현되어 있어야 함)
+2) 요청시 값을 전달하고 싶으면 쿼리스트링 방식으로 전달할 수 있다 
+3) 한글인 경우 인코딩이 필요하다  
+4) a태그로 요청될 때는 브라우저가 인코딩을 해줌 !
+5) 자바의 라이브러리가 제공된다  URLEncoder, URLDecoder            
+
+
+
+sendRedirect는 get요청을 한다 
+쿼리스트링으로 값을 전달할 수 있다 
+주의 ! 한글은 인코딩을 해야한다 !
+자바의 라이브러리가 제공된다 
+
+
+ String message  = URLEncoder.encode("아이디확인","utf-8");			
+ sendRedirect시 데이터를 보낼 수 있디. 이때 한글인 경우 utf-8인코딩이 필요하다
+ url로 요청시는 웹브라우저가 자동으로 인코딩을 해준다 
+ response.sendRedirect("/sessionLogin/main.do?message=" + message);
