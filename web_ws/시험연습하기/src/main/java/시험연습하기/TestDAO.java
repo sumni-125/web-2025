@@ -130,7 +130,7 @@ public class TestDAO {
 		 * t.deleteOne("hihihi");
 		 * System.out.println(t.selectAll());
 		 */
-		
+		System.out.println(t.selectAll());
 	}
 	
 }

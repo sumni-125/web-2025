@@ -1,0 +1,23 @@
+
+
+
+create table ordersample(
+   id varchar2(10) primary key,
+   name varchar2(50)  
+);
+
+--시퀀스 만들기
+create sequence  order_seq start with 1;
+
+
+--시퀀스 값 가져오기
+select order_seq.nextval from dual;
+
+
+--등록시 자동으로 시퀀시 값을 가져온다음   값 추가하기
+insert into   ordersample ( id, name ) values( order_seq.nextval, 'test주문');
+
+
+select * from ordersample;
+
+drop sequence order_seq;
