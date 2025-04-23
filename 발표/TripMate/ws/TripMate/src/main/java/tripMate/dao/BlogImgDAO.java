@@ -1,0 +1,84 @@
+package tripMate.dao;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.UUID;
+
+import tripMate.model.BlogImgDTO;
+
+public class BlogImgDAO {
+
+    String driver = "oracle.jdbc.driver.OracleDriver";
+    String url = "jdbc:oracle:thin:@localhost:1521:testdb";
+    String user = "scott";
+    String password = "tiger";
+
+    // DB 연결 메서드
+    Connection dbCon() {
+        Connection con = null;
+
+        try {
+            // 1. 드라이버 로드
+            Class.forName(driver);
+            // 2. DB 연결
+            con = DriverManager.getConnection(url, user, password);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return con;
+    }
+
+    // 이미지 정보 삽입 메서드
+    public void insert(BlogImgDTO idto) {
+        String sql = "INSERT INTO image_info_tbl (image_id, image_url, blog_id) VALUES (?, ?, ?)";
+
+        try (Connection conn = dbCon();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, generateImageId());  // 이미지 ID 생성 (예: UUID)
+            
+            // 이미지 경로에서 '/upload/'를 제거한 파일 이름만 저장
+         // 이미지 경로에서 '/upload/'를 제거한 파일 이름만 저장
+            String fileName = idto.getImageUrl().substring(idto.getImageUrl().indexOf("/upload/") + "/upload/".length());
+            pstmt.setString(2, fileName); // 파일 이름만 저장
+            pstmt.setString(3, idto.getBlogId());   // blogId
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 이미지 ID 생성 메서드 (UUID 사용)
+    private String generateImageId() {
+        return UUID.randomUUID().toString();  // 이미지 ID 생성
+    }
+
+    // 이미지 목록을 반환하는 메서드
+    public ArrayList<BlogImgDTO> selectAll() {
+        ArrayList<BlogImgDTO> imgList = new ArrayList<>();
+        String sql = "SELECT * FROM image_info_tbl";
+
+        try (Connection conn = dbCon();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                BlogImgDTO img = new BlogImgDTO();
+                img.setImageUrl(rs.getString("image_url"));
+                img.setBlogId(rs.getString("blog_id"));
+                imgList.add(img);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return imgList;
+    }
+}

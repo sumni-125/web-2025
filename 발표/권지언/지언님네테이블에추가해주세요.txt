@@ -1,0 +1,7 @@
+지언님네테이블에추가해주세요
+NSERT INTO Categories (category_id, category_name, display_order) VALUES ('Beauty', '미용', 3);
+INSERT INTO Categories (category_id, category_name, display_order) VALUES ('Books', '도서', 5);
+INSERT INTO Categories (category_id, category_name, display_order) VALUES ('Electronics', '전자기기', 1);
+INSERT INTO Categories (category_id, category_name, display_order) VALUES ('Fashion', '패션', 2);
+INSERT INTO Categories (category_id, category_name, display_order) VALUES ('HomeAppliances', '가전제품', 6);
+INSERT INTO Categories (category_id, category_name, display_order) VALUES ('Sports', '스포츠', 4);

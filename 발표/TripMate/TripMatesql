@@ -1,0 +1,645 @@
+
+-- 외부 데이터 테이블들(다른쪽에서 만들어져야 되는 테이블) 
+-- 유저 테이블 시쿼스 포함 건들지 말 것
+CREATE TABLE TRIPMATE_USER (
+    USER_CODE VARCHAR2(50) PRIMARY KEY,             -- 유저 고유번호
+    ID VARCHAR2(12 CHAR) NOT NULL UNIQUE,           -- 유저 아이디
+    PW VARCHAR2(18 CHAR) NOT NULL,                  -- 유저 비밀번호
+    NICKNAME VARCHAR2(10 CHAR) NOT NULL UNIQUE      -- 유저 닉네임(= 이름)
+);
+
+CREATE SEQUENCE SEQ_USER_CODE
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
+
+CREATE OR REPLACE TRIGGER TRG_USER_CODE
+BEFORE INSERT ON TRIPMATE_USER
+FOR EACH ROW
+BEGIN
+    IF :NEW.USER_CODE IS NULL THEN
+        SELECT 'U' || LPAD(SEQ_USER_CODE.NEXTVAL, 5, '0') INTO :NEW.USER_CODE FROM DUAL;
+    END IF;
+END;
+/
+
+-- 유저 데이터(임시 데이터)
+INSERT INTO TRIPMATE_USER (ID, PW, NICKNAME)
+VALUES ('testuser', 'password123', '테스트');
+INSERT INTO TRIPMATE_USER (ID, PW, NICKNAME)
+VALUES ('id', 'pw', '테스트2');
+INSERT INTO TRIPMATE_USER (ID, PW, NICKNAME)
+VALUES ('test', 'test', '테스트3');
+INSERT INTO TRIPMATE_USER (ID, PW, NICKNAME)
+VALUES ('test2', 'test2', '테스트4');
+
+select * from TRIPMATE_marker_data;
+update TRIPMATE_marker_data SET days = 'day1', address = '서울 마포구 서교동 345-1', lat = 37.655215, lng = 126.923506, day_order = 1, descriptionTEXT = 'test1' WHERE SD_CODE = 'T00002' and marker_code = 'M000001';
+CREATE TABLE TRIPMATE_marker_data (
+    marker_code VARCHAR2(50) PRIMARY KEY,
+    sd_code     VARCHAR2(50) REFERENCES TRIPMATE_SCHEDULE(SD_CODE),       -- Schedule code (외래키 등으로 활용 가능)
+    dayS         VARCHAR2(10),       -- 예: 'day1', 'day2'
+    address     VARCHAR2(255),      -- 장소 주소
+    lat         NUMBER(10, 6),      -- 위도 (정밀도: 소수점 이하 6자리)
+    lng         NUMBER(10, 6),      -- 경도
+    day_order   NUMBER(3),          -- 당일 순서
+    descriptionTEXT VARCHAR2(500)      -- 부가 설명
+);
+
+CREATE SEQUENCE seq_marker_code
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE OR REPLACE TRIGGER trg_marker_code
+BEFORE INSERT ON TRIPMATE_marker_data
+FOR EACH ROW
+BEGIN
+    :NEW.marker_code := 'M' || TO_CHAR(seq_marker_code.NEXTVAL, 'FM000000'); -- 'M'을 앞에 붙여서 코드 형식 지정
+END;
+/
+
+SELECT * FROM TRIPMATE_marker_data;
+INSERT into TRIPMATE_marker_data(SD_CODE, dayS, address, lat, lng, day_order, descriptionTEXT)
+VALUES ('T00002', 'day1', '서울 마포구 서교동 345-1', 37.555215, 126.923506, 1, 'test');
+
+INSERT into TRIPMATE_marker_data(SD_CODE, dayS, address, lat, lng, day_order, descriptionTEXT)
+VALUES ('T00002', 'day1', '서울 마포구 서교동 357-1', 37.553619, 126.921607, 2, 'test');
+
+-- 여행스케줄(기간) 테이블
+CREATE TABLE TRIPMATE_SCHEDULE (
+    SD_CODE VARCHAR2(50) PRIMARY KEY,       -- 여행 고유키
+    NAME VARCHAR2(20) NOT NULL,             -- 일정 제목
+    START_DATE DATE NOT NULL,               -- 시작일
+    END_DATE DATE NOT NULL,                 -- 종료일
+    PLACE_NAME VARCHAR2(100) NOT NULL       -- 여행 지역명
+);
+
+CREATE SEQUENCE SEQ_SD_CODE
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
+
+CREATE OR REPLACE TRIGGER TRG_SD_CODE
+BEFORE INSERT ON TRIPMATE_SCHEDULE
+FOR EACH ROW
+BEGIN
+    IF :NEW.SD_CODE IS NULL THEN
+        SELECT 'T' || LPAD(SEQ_SD_CODE.NEXTVAL, 5, '0') INTO :NEW.SD_CODE FROM DUAL;
+    END IF;
+END;
+/
+
+select * from TRIPMATE_SCHEDULE;
+-- 여행 스케쥴 데이터(임시 데이터)
+INSERT INTO TRIPMATE_SCHEDULE (NAME, START_DATE, END_DATE, PLACE_NAME)
+VALUES ('제주도 여행', TO_DATE('2025-04-10', 'YYYY-MM-DD'), TO_DATE('2025-04-18', 'YYYY-MM-DD'), '제주도');
+
+INSERT INTO TRIPMATE_SCHEDULE (NAME, START_DATE, END_DATE, PLACE_NAME)
+VALUES ('제주도 여행', TO_DATE('2025-03-10', 'YYYY-MM-DD'), TO_DATE('2025-03-18', 'YYYY-MM-DD'), '제주도');
+
+
+
+-- 여행 참여자 테이블
+CREATE TABLE trip_member_tbl (
+    sd_code   VARCHAR2(50) NOT NULL REFERENCES TRIPMATE_SCHEDULE(SD_CODE),   -- 외래키: 여행 고유키
+    user_code VARCHAR2(50) NOT NULL REFERENCES TRIPMATE_USER(USER_CODE),       -- 외래키: 유저 고유키
+    
+    CONSTRAINT pk_trip_member PRIMARY KEY (SD_CODE, user_code)            -- 복합 기본키 설정
+);
+
+-- 여행 참여자(임시 데이터)
+INSERT INTO trip_member_tbl (SD_CODE, USER_CODE) VALUES ('T00001', 'U00001');
+INSERT INTO trip_member_tbl (SD_CODE, USER_CODE) VALUES ('T00001', 'U00002');
+INSERT INTO trip_member_tbl (SD_CODE, USER_CODE) VALUES ('T00002', 'U00002');
+INSERT INTO trip_member_tbl (SD_CODE, USER_CODE) VALUES ('T00002', 'U00003');
+INSERT INTO trip_member_tbl (SD_CODE, USER_CODE) VALUES ('T00002', 'U00004');
+
+-- 고정데이터 테이블들
+-- 카테고리(숙박, 항공, 교통, 식사, 관광, 쇼핑, 기타)
+CREATE TABLE category_tbl (
+    category_code VARCHAR2(20) PRIMARY KEY
+);
+
+-- 카테고리 고정 데이터
+INSERT INTO category_tbl VALUES ('숙박');
+INSERT INTO category_tbl VALUES ('항공');
+INSERT INTO category_tbl VALUES ('교통');
+INSERT INTO category_tbl VALUES ('식사');
+INSERT INTO category_tbl VALUES ('관광');
+INSERT INTO category_tbl VALUES ('쇼핑');
+INSERT INTO category_tbl VALUES ('기타');
+
+-- 결제수단(카드결제, 현금결제)
+CREATE TABLE payment_type_tbl (
+    type_code VARCHAR2(20) PRIMARY KEY
+);
+
+-- 결제 수단 고정 데이터
+INSERT INTO payment_type_tbl VALUES ('카드결제');
+INSERT INTO payment_type_tbl VALUES ('현금결제');
+
+-- 결제 방식(1/N, 한번에결제, 개인결제)
+CREATE TABLE payment_method_tbl (
+    method_code VARCHAR2(20) PRIMARY KEY
+);
+
+-- 결제 방식 고정 데이터
+INSERT INTO payment_method_tbl VALUES ('1/N');
+INSERT INTO payment_method_tbl VALUES ('한번에결제');
+INSERT INTO payment_method_tbl VALUES ('개인결제');
+
+
+
+-- 실제 데이터가 입력되는 테이블들
+-- 지출 데이터 테이블
+CREATE TABLE cost_tbl (
+    cost_id        VARCHAR2(50) PRIMARY KEY,                                        -- 자동생성(결제 고유키)
+    trip_code      VARCHAR2(50) NOT NULL REFERENCES TRIPMATE_SCHEDULE(SD_CODE),        -- 외부 여행테이블의 고유키(외래키)
+    trip_date      DATE NOT NULL,                                                   -- 여행 날짜(지출이 발생한 날짜)
+    category_code  VARCHAR2(20) NOT NULL REFERENCES category_tbl(category_code),    -- 카테고리(고정테이블)
+    location       VARCHAR2(150) NOT NULL,                                          -- 장소
+    amount         NUMBER NOT NULL,                                                 -- 총 금액
+    payment_type   VARCHAR2(20) NOT NULL REFERENCES payment_type_tbl(type_code),    -- 결제 수단(고정테이블)
+    payment_method VARCHAR2(20) NOT NULL REFERENCES payment_method_tbl(method_code),-- 결제 방식(고정테이블)
+    payer_code     VARCHAR2(50) NOT NULL REFERENCES TRIPMATE_USER(user_code)           -- 결제자(유저 테이블의 유저이름을 가져오기 위한 외래키)
+);
+
+CREATE SEQUENCE SEQ_COST_ID
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
+
+CREATE OR REPLACE TRIGGER TRG_COST_ID
+BEFORE INSERT ON cost_tbl
+FOR EACH ROW
+BEGIN
+    IF :NEW.cost_id IS NULL THEN
+        SELECT 'C' || LPAD(SEQ_COST_ID.NEXTVAL, 5, '0') INTO :NEW.cost_id FROM DUAL;
+    END IF;
+END;
+/
+
+
+-- 개인(참여자) 비용 테이블
+CREATE TABLE personal_cost_tbl (
+    personal_cost_id VARCHAR2(50) PRIMARY KEY,                                      -- 자동생성 (개인 지불 고유키)
+    cost_id          VARCHAR2(50) NOT NULL REFERENCES cost_tbl(cost_id),            -- 외래키: 어떤 지출에서 나왔는지
+    user_code        VARCHAR2(50) NOT NULL REFERENCES TRIPMATE_USER(user_code),        -- 유저 외래키(유저 테이블의 유저이름을 가져오기 위한 외래키)
+    personal_cost    NUMBER NOT NULL,                                               -- 개인 할당 금액
+    status           VARCHAR2(20) NOT NULL CHECK (status IN ('정산대기중', '정산완료'))-- 정산 상태(정산대기중, 정산완료)
+);
+
+CREATE SEQUENCE SEQ_PERSONAL_COST_ID
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
+
+CREATE OR REPLACE TRIGGER TRG_PERSONAL_COST_ID
+BEFORE INSERT ON personal_cost_tbl
+FOR EACH ROW
+BEGIN
+    IF :NEW.personal_cost_id IS NULL THEN
+        SELECT 'P' || LPAD(SEQ_PERSONAL_COST_ID.NEXTVAL, 5, '0') INTO :NEW.personal_cost_id FROM DUAL;
+    END IF;
+END;
+/
+commit;
+
+
+
+
+
+select * from cost_tbl;
+
+select * from personal_cost_tbl;
+
+
+
+
+
+select * from TRIPMATE_SCHEDULE;
+
+select * from TRIPMATE_USER;
+
+select * from trip_member_tbl;
+
+
+
+
+-- 1) 트리거 삭제
+DROP TRIGGER TRG_PERSONAL_COST_ID;
+DROP TRIGGER TRG_COST_ID;
+DROP TRIGGER TRG_SD_CODE;
+DROP TRIGGER TRG_USER_CODE;
+
+-- 2) 시퀀스 삭제
+DROP SEQUENCE SEQ_PERSONAL_COST_ID;
+DROP SEQUENCE SEQ_COST_ID;
+DROP SEQUENCE SEQ_SD_CODE;
+DROP SEQUENCE SEQ_USER_CODE;
+
+-- 3) 테이블 삭제 (CASCADE CONSTRAINTS 옵션으로 외래키 제약조건도 함께 제거)
+DROP TABLE personal_cost_tbl CASCADE CONSTRAINTS;
+DROP TABLE cost_tbl           CASCADE CONSTRAINTS;
+DROP TABLE trip_member_tbl    CASCADE CONSTRAINTS;
+DROP TABLE payment_method_tbl CASCADE CONSTRAINTS;
+DROP TABLE payment_type_tbl   CASCADE CONSTRAINTS;
+DROP TABLE category_tbl       CASCADE CONSTRAINTS;
+DROP TABLE TRIPMATE_SCHEDULE  CASCADE CONSTRAINTS;
+DROP TABLE TRIPMATE_USER      CASCADE CONSTRAINTS;
+
+
+-- 3. 지역 테이블 (1)
+CREATE table location_info_tbl(
+     location_id varchar2(20) PRIMARY KEY NOT NULL, -- 지역번호
+     location_name varchar2(20) NOT NULL -- 이름
+)
+
+-- 4. 검색 메인 이미지 테이블 (2)
+CREATE TABLE location_img_tbl(
+	img_url varchar2(100),
+	location_id varchar2(20) REFERENCES location_info_tbl(location_id)
+)
+
+-- 3. 지역 테이블 insert (1)
+INSERT INTO location_info_tbl VALUES ('L02', '서울');
+INSERT INTO location_info_tbl VALUES ('L031', '경기');
+INSERT INTO location_info_tbl VALUES ('L032', '인천');
+INSERT INTO location_info_tbl VALUES ('L033', '강원');
+INSERT INTO location_info_tbl VALUES ('L051', '부산');
+
+-- 윤석님
+INSERT INTO location_info_tbl VALUES ('L053', '대구');
+INSERT INTO location_info_tbl VALUES ('L062', '광주');
+INSERT INTO location_info_tbl VALUES ('L042', '대전');
+INSERT INTO location_info_tbl VALUES ('L052', '울산');
+INSERT INTO location_info_tbl VALUES ('L043', '충북');
+
+
+INSERT INTO location_info_tbl VALUES ('L041', '충남');
+INSERT INTO location_info_tbl VALUES ('L063', '전북');
+INSERT INTO location_info_tbl VALUES ('L061', '전남');
+INSERT INTO location_info_tbl VALUES ('L054', '경북');
+INSERT INTO location_info_tbl VALUES ('L055', '경남');
+INSERT INTO location_info_tbl VALUES ('L064', '제주');
+
+-- 4. 검색 메인 이미지 insert (2)
+INSERT INTO location_img_tbl VALUES ('seoul2.avif', 'L02');
+INSERT INTO location_img_tbl VALUES ('gyeongki2.jpg', 'L031');
+INSERT INTO location_img_tbl VALUES ('incheon2.jpg', 'L032');
+
+INSERT INTO location_img_tbl VALUES ('gangwon.jpeg', 'L033');
+INSERT INTO location_img_tbl VALUES ('busan.webp', 'L051');
+INSERT INTO location_img_tbl VALUES ('daegu.jpg', 'L053'); -- 대구
+INSERT INTO location_img_tbl VALUES ('gwangju.jpg', 'L062'); -- 광주
+INSERT INTO location_img_tbl VALUES ('daejeon.jpg', 'L042'); -- 대전
+INSERT INTO location_img_tbl VALUES ('ulsan.jpg', 'L052'); -- 울산
+
+
+INSERT INTO location_img_tbl VALUES ('Chungcheongbuk.jpg', 'L043'); -- 충북
+INSERT INTO location_img_tbl VALUES ('Chungcheongnam.jpg', 'L041'); -- 충남
+INSERT INTO location_img_tbl VALUES ('Jeollabuk.jpg', 'L063'); -- 전북
+INSERT INTO location_img_tbl VALUES ('Jeollanam.jpg', 'L061'); -- 전남
+INSERT INTO location_img_tbl VALUES ('Gyeongsangbuk.jpg', 'L054'); -- 경북
+INSERT INTO location_img_tbl VALUES ('Gyeongsangnam.png', 'L055'); -- 경남
+INSERT INTO location_img_tbl VALUES ('jeju.jpg', 'L064'); -- 제주
+
+--1.  블로그 업로드 할 때 사용한 테이블
+CREATE table blog_upload_tbl(
+     blog_id varchar2(20) primary KEY, -- 블로그 아이디	
+     title varchar2(100), -- 블로그 제목 입력할 곳
+     content varchar(1000), -- 블로그 내용 입력할 곳
+     regdate DATE , -- 날짜를 나타낼 곳
+     location_id varchar2(20) REFERENCES location_info_tbl(location_id),
+     USER_CODE VARCHAR2(50) REFERENCES TRIPMATE_USER(USER_CODE)
+);
+
+-- 새로운 시퀀스 생성
+CREATE SEQUENCE blog_upload_seq
+START WITH 100
+INCREMENT BY 1
+NOCACHE;
+
+-- 트리거 생성
+CREATE OR REPLACE TRIGGER trg_blog_upload_id
+BEFORE INSERT ON blog_upload_tbl
+FOR EACH ROW
+BEGIN
+    IF :NEW.blog_id IS NULL THEN
+        SELECT 'B' || LPAD(blog_upload_seq.NEXTVAL, 3, '0')
+        INTO :NEW.blog_id
+        FROM DUAL;
+    END IF;
+END;
+
+-- 1. 블로그 업로드 insert (3)
+INSERT INTO blog_upload_tbl (title, content, regdate, location_id, USER_CODE)
+VALUES ('전주 여행', '신나는 전주 여행을 다녀 왔다', sysdate, 'L063', 'U00003');
+
+INSERT INTO blog_upload_tbl (title, content, regdate, location_id, USER_CODE)
+VALUES ('부산 여행', '신나는 부산 여행을 다녀 왔다', sysdate, 'L051', 'U00003');
+
+-- 2. 이미지 정보 테이블
+CREATE table image_info_tbl(
+     image_id varchar2(20) PRIMARY KEY, -- 이미지 아이디
+     image_url varchar2(100), -- 이미지 주소
+     blog_id varchar2(20) REFERENCES blog_upload_tbl(blog_id)
+);
+
+CREATE SEQUENCE image_info_seq
+START WITH 10
+INCREMENT BY 1
+NOCACHE;
+
+CREATE OR REPLACE TRIGGER trg_image_info_id
+BEFORE INSERT ON image_info_tbl
+FOR EACH ROW
+BEGIN
+    IF :NEW.image_id IS NULL THEN
+        SELECT 'I' || LPAD(image_info_seq.NEXTVAL, 3, '0')
+        INTO :NEW.image_id
+        FROM DUAL;
+    END IF;
+END;
+
+-- 5. 검색 상세 정보 테이블 (관광지)
+CREATE TABLE loc_img_info(
+	img_title varchar2(100),
+	img_content varchar2(4000),
+	img_url varchar2(100),
+	location_address varchar2(1000),
+	location_id varchar2(20) REFERENCES location_info_tbl(location_id)
+);
+
+-- 6. 호텔 정보 테이블
+CREATE TABLE loc_hotel_info(
+	hotel_title varchar2(100),
+	hotel_rating number(5),
+	hotel_price number(20),
+	location_address varchar2(1000),
+	img_url varchar2(100),
+	location_id varchar2(20) REFERENCES location_info_tbl(location_id)
+);
+
+-- 2. 이미지 정보 insert
+-- 부산
+INSERT INTO image_info_tbl (image_url, blog_id) VALUES ('busan1.jpg','B101' );
+INSERT INTO image_info_tbl (image_url, blog_id) VALUES ('busan2.jpg','B101' );
+INSERT INTO image_info_tbl (image_url, blog_id) VALUES ('busan3.jpg','B101' );
+INSERT INTO image_info_tbl (image_url, blog_id) VALUES ('busan4.jpg','B101' );
+INSERT INTO image_info_tbl (image_url, blog_id) VALUES ('busan5.jpg','B101' );
+
+-- 전주
+INSERT INTO image_info_tbl  (image_url, blog_id)  VALUES ('jeonju.jpg','B100' );
+INSERT INTO image_info_tbl  (image_url, blog_id) VALUES ('jeonju1.jpg','B100' );
+INSERT INTO image_info_tbl  (image_url, blog_id) VALUES ('jeonju2.jpg','B100' );
+INSERT INTO image_info_tbl  (image_url, blog_id) VALUES ('jeonju3.jpg','B100' );
+INSERT INTO image_info_tbl  (image_url, blog_id) VALUES ('jeonju4.jpg','B100' );
+
+-- 5. 관광지 insert
+
+-- 서울
+INSERT INTO loc_img_info VALUES ('경복궁', '경복궁은 1395년 태조 이성계에 의해서 새로운 조선왕조의 법궁으로 지어졌다. 경복궁은 5대 궁궐 가운데 으뜸의 규모와 건축미를 자랑한다. 경복궁에는 조선시대의 대표적인 건축물인 경회루와 향원정의 연못이 원형대로 남아 있다. 현재 흥례문 밖 서편에는 국립고궁 박물관이 위치하고 있고, 경복궁 내 향원정의 동편에는 국립민속 박물관이 위치하고 있다.', 'seoul1.jpg' , '서울특별시 종로구 사직로 161', 'L02');
+INSERT INTO loc_img_info VALUES ('롯데월드타워', '한국적 곡선의 미를 지닌 한국 전통의 도자기와 붓의 형상을 모티브로 설계된 롯데월드타워는 총 129층, 555m 높이로 세계 6위의 초고층 빌딩이다. 특급 호텔 시그니엘 서울과, 화려한 서울의 야경을 볼 수 있는 전망대인 서울스카이, 최고급 레지던스와 오피스 공간, 복합기능공간 등으로 구성되어 있다.', 'seoul2.jpg' , '서울특별시 송파구 올림픽로 300', 'L02');
+INSERT INTO loc_img_info VALUES ('낙산공원', '낙산공원은 대학로와 동대문으로부터 이어지며 역사와 문화를 함께 즐길 수 있는 공원이다. 서울한양도성과 푸른 숲이 어우러져 아름다운 정취를 느낄 수 있고, 서울에서 가장 아름다운 야경을 볼 수 있는 곳으로 각광받고 있다. 언덕 정상에서 주택과 벽화가 있는 이화동 벽화마을로 갈 수 있고 흥인지문과 한양도성길로 가는 동대문 코스, 외부 성곽 벽면 전체를 보면서 걸을 수 있는 한성대 입구 방면 코스 등 다양한 코스가 있다.', 'seoul3.jpg' , '서울특별시 종로구 낙산길 41', 'L02');
+INSERT INTO loc_img_info VALUES ('세빛섬', '세빛섬은 서울의 중심인 한강에 색다른 수변 문화를 즐길 수 있는 랜드마크로 조성된 복합 문화 공간이다. 세계 최초로 물 위에 떠 있을 수 있는 부체 위에 건물을 짓는 플로팅 형태의 건축물이다. 세빛섬은 한강을 아름답게 밝혀줄 세 개의 빛나는 섬과 다양한 영상 및 콘텐츠가 상영되는 예빛으로 이루어져 있다.', 'seoul4.jpg' , '서울특별시 서초구 올림픽대로 2085-14', 'L02');
+
+-- 경기
+INSERT INTO loc_img_info VALUES ('아쿠아플라넷 일산', '경기도 고양 한류월드 조성부지 인근에 자리한 수도권 최대 규모의 아쿠아리움으로 특히 국내에서는 처음으로 실내동물원이 결합된 컨버젼스 아쿠아리움이라는 점이 특징이다. 전 세계에서 온 해양 생물과 육지 생물이 입주하여 바다코끼리 알락꼬리여우원숭이 히야신스매커우 등의 다양한 생물들을 한자리에서 만나볼 수 있다. ', 'gyeonggi1.jpg' , '	경기도 고양시 일산서구 한류월드로 282', 'L031');
+INSERT INTO loc_img_info VALUES ('광명동굴', '1912년 일제가 자원수탈을 목적으로 개발을 시작한 광명동굴은 일제강점기 징용과 수탈의 현장이자 해방 후 근대화ㆍ산업화의 흔적을 고스란히 간직한 산업유산이다. 광명동굴은 산업유산으로서의 가치와 문화적 가치가 결합된 대한민국 최고의 동굴테마파크라는 평가를 받고 있으며 연간 100만 명 이상의 관광객이 찾는 세계가 놀란 폐광의 기적을 이루었다.', 'gyeonggi2.jpg' , '경기도 광명시 가학로85번길 142', 'L031');
+INSERT INTO loc_img_info VALUES ('수원 화성', '조선 태종 때 도호부로 승격된 수원은 한성 4진의 하나였다. 한양을 중심으로 동서남북 방향인 광주, 강화, 수원, 개성에 진을 설치하여 수도 한양을 보위케 한 것이다. 그 수원 땅을 지키고 있는 화성은 유네스코 세계문화유산으로 등재되면서 역사적 가치를 높이고 있다. 또한 다양한 상설 공연을 진행하고, 매년 가을이면 수원 화성문화제를 개최하여 수원 화성을 알리고 있다.', 'gyeonggi3.jpg' , '경기도 수원시 장안구 영화동 320-2', 'L031');
+INSERT INTO loc_img_info VALUES ('안성팜랜드', '안성팜랜드는 가축들을 직접 만지고 먹이주며 즐거운 체험을 할 수 있는 체험목장이다. 황소, 면양, 거위, 돼지, 당나귀 등 다양한 가축들과 함께 교감할 수 있는 체험프로그램을 진행하고 있다. 탁 트인 초원에서 온 가족이 즐길 수 있는 놀이시설과 우리나라 농축산업의 소중함을 몸과 마음으로 느낄 수 있는 교육시설 등이 있어 가족단위 관광객들에게 많은 인기를 받고 있는 곳이다.', 'gyeonggi4.jpg' , '경기도 안성시 공도읍 대신두길 28', 'L031');
+
+-- 인천
+INSERT INTO loc_img_info VALUES ('송도 센트럴파크', '송도 고층빌딩 숲 사이, 자연을 담은 공원인 송도 센트럴파크는 뉴욕 센트럴파크를 모티브로 만들어졌다. 국내 최초로 바닷물을 이용한 해수공원이자 한국의 지형적 특성을 살린 도시공원으로, 인공수로에는 수상 택시, 카누 등 수상 레저 시설이 갖춰져 있고 공원 곳곳에서 다양한 문화와 예술을 만끽할 수 있는 송도의 랜드마크이자 휴식공간이다.', 'incheon1.jpg' , '인천광역시 연수구 컨벤시아대로 160', 'L032');
+INSERT INTO loc_img_info VALUES ('인천 차이나타운', '120년이 넘는 역사 동안 화교 고유의 문화와 풍습을 간직하고 있는 곳으로, 붉은색으로 치장된 골목 구석구석을 둘러볼 때마다 마치 중국으로 여행을 온듯한 기분이다. 과거에는 중국에서 수입된 물품들을 파는 상점들이 대부분이었으나, 현재는 중국 음식점들이 많다.', 'incheon2.jpg' , '인천광역시 중구 차이나타운로59번길 20', 'L032');
+INSERT INTO loc_img_info VALUES ('인천대공원', '자연을 만끽할 수 있는 즐거움이 있고 여유롭게 힐링할 수 있어 연간 400만 명의 시민들이 찾는 수도권의 대표적인 휴양공원이다. 주요 시설로 수목원, 습지원, 숲학교, 캠핑장, 휴게음식점, 공연시설 등을 갖추고 있다. 체험은 산림치유프로그램, 목재문화체험, 어린이동물원 등을 운영한다. 축구장, 풋살장은 미리 예약하면 이용할 수 있다. ', 'incheon3.jpg' , '인천광역시 남동구 무네미로 236', 'L032');
+INSERT INTO loc_img_info VALUES ('을왕리 해수욕장', '초승달처럼 반원으로 생긴 백사장이 유명한 주변 소나무 숲과 바위들이 어우러져 있어 시원한 광경을 자랑하는 곳이다.울창한 송림과 해수욕장 양쪽 옆으로 기암괴석이 늘어서 있어 경관이 매우 아름다우며, 특히 낙조가 아름답기로 서해안에서 손꼽힌다. 해수욕장으로는 드물게 넓은 잔디밭과 충분한 숙박시설이 갖춰져 있어 각종 스포츠를 즐길 수 있다.', 'incheon4.jpg' , '인천광역시 중구 용유서로302번길 16-15', 'L032');
+
+-- 강원
+INSERT INTO loc_img_info VALUES ('아르떼뮤지엄 강릉', '아르떼뮤지엄 강릉은 디스트릭트가 2021년 12월 강릉 경포호 인근에서 선보이는 세 번째 몰입형 미디어아트 상설 전시관이다. 관동팔경의 으뜸인 강릉에서 밸리(VALLEY)라는 테마로 백두대간의 중추인 강원도와 강릉의 지역적 특성을 반영한 12개의 다채로운 미디어아트 전시가 1,500평의 공간에서 펼쳐진다. 영원한 자연을 주제로 제작된 작품들은 시각적 강렬함과 감각적인 사운드, 품격 있는 향기와 함께 완벽한 몰입 경험을 제공한다.', 'gangwon1.jpg' , '강원특별자치도 강릉시 난설헌로 131', 'L033');
+INSERT INTO loc_img_info VALUES ('도째비골스카이밸리', '묵호등대와 월소 택지 사이에 있는 도째비골에 동해의 아름다운 풍광을 즐길 수 있도록 각종 체험시설을 조성한 관광지다. 이름의 ‘도째비’는 ‘도깨비’의 방언이다. 2021년 5월에 개방한 도째비골 스카이밸리는 체험시설인 스카이워크와 스카이 사이클, 자이언트 슬라이드를 중심으로 음식 및 기념품을 판매하는 도깨비 아트하우스, 매표소 등의 편의시설을 아우른다. ', 'gangwon2.jpg' , '강원특별자치도 동해시 묵호진동 2-109', 'L033');
+INSERT INTO loc_img_info VALUES ('알파카월드', '알파카월드는 청정자연 강원도 홍천의 푸른 숲속에 있으며 자연 그대로의 모습으로 살아가는 동물들을 가까이서 만나고 교감할 수 있는 알파카 테마 감성 여행지다. 안데스생태방목장에서 만나는 50여 마리의 귀여운 알파카들, 푸른 숲을 알파카와 함께 발을 맞춰 걸으며 교감할 수 있는 알파카월드의 대표 체험 ‘알파카와 힐링 산책’, 넓은 잔디 광장에서 알파카들과 교감하며 뛰어놀 수 있는 ‘알파카놀이터’, 문을 열고 들어가는 순간 동화 속 세상에 온 듯한 느낌을 주는 ‘새들의정원’까지 만나볼 수 있다. ', 'gangwon3.jpg' , '강원특별자치도 홍천군 화촌면 덕밭재길 146-155', 'L033');
+INSERT INTO loc_img_info VALUES ('대관령 하늘목장', '높은 산지에 둘러싸인 고원 지대인 대관령에 조성된 목장으로 자연을 직접 체험하는 국내 최초의 자연순응형 체험목장이다. 목장의 트레이드마크인 트랙마차를 타고 45분 동안 목장을 둘러볼 수 있다. 먹이 주기 체험을 하며 동물들과 교감할 수 있고, 다양한 포토존에서 추억을 만들 수도 있다. 천천히 여유 있게 트래킹을 하며 둘러볼 경우 약 3시간 정도가 소요된다.', 'gangwon4.jpg' , '강원특별자치도 평창군 대관령면 꽃밭양지길 458-23', 'L033');
+
+-- 부산
+INSERT INTO loc_img_info VALUES ('광안리 해수욕장', '부산 수영구에 위치한 아름다운 해변이다. 맑고 푸른 바다와 고운 모래가 특징으로, 여름철에는 많은 관광객들이 찾는 명소이다. 특히 광안대교와 바다가 어우러지는 경치가 아름다워 야경 명소로도 유명하다. 해수욕 외에도 다양한 해양 스포츠를 즐길 수 있으며, 인근에는 카페와 레스토랑들이 있어 맛있는 음식을 즐기며 여유로운 시간을 보낼 수 있다. ', 'busan1.jpg' , '부산광역시 수영구 광안해변로 219', 'L051');
+INSERT INTO loc_img_info VALUES ('청사포 다릿돌전망대', '2017년 8월 17일 개장한 청사포 다릿돌전망대는 도심 속 어촌인 청사포, 수려한 해안경관, 일출, 낙조 등을 감상할 수 있어 부산의 대표적인 관광명소로 꼽힌다. 전망대 끝자락에는 반달 모양의 투명 바닥을 설치해 바다 위를 걷는 아슬아슬함을 느낄 수 있다.', 'busan2.jpg' , '부산광역시 해운대구 청사포로 167 ', 'L051');
+INSERT INTO loc_img_info VALUES ('국립해양박물관', '국립 해양 박물관은 2012년 개관한 세계 최초의 종합 해양 박물관이다. 해양인들의 활동, 해양 의식 변화, 해양 과학사, 전통적인 우리 배의 생김새, 해양 탐사 장비 등의 전시를 통해 해양 역사, 인물, 문화, 과학, 생물 등과 같은 해양에 대한 폭넓은 지식을 전달하고 있다.', 'busan3.jpg' , '부산광역시 영도구 해양로301번길 45', 'L051');
+INSERT INTO loc_img_info VALUES ('스카이라인 루지 부산', '스카이라인 루지는 뉴질랜드 로토루아에서 32년 전 처음 발명되었으며, 전 세계적으로 4천 만회 이상의 라이딩을 기록하고 있다. 현재 부산을 포함한 전 세계 6개의 지역에서 루지를 운영하고 있다. 스카이라인 루지 부산은 동부산 오시리아 테마파크의 대표적인 아웃도어 체험형 놀이시설로 다양한 부대시설과 아름다운 바다를 배경으로 온 가족 모두가 즐길 수 있다.', 'busan4.jpg' , '부산광역시 기장군 기장읍 기장해안로 205', 'L051');
+
+
+--<대구>
+INSERT INTO loc_img_info VALUES ('이월드', '이월드는 1987년 10월, 타워 건립과 종합 테마파크 조성 공사의 재착공을 시작으로, 1993년 종합 테마파크 마스터플랜을 확정한 후 1995년 3월 개장한 테마파크이다. 폭포, 분수, 조명, 꽃으로 꾸며진 유럽식 도시공원 형식으로 조성되어 있으며, 남녀노소 누구나 즐길 수 있는 놀이기구, 전시 및 예술 공간, 깔끔한 식당가 등이 마련되어 있다. 이월드는 각 테마에 따라 다양한 광장을 조성하여 방문객에게 새로운 경험과 즐거움을 선사하고 있다. 입구에 위치한 진입광장, 랜드 중심부에 자리한 중앙광장, 어린이들을 위한 어린이광장, 젊은이들을 위한 영타운광장 등이 대표적인 공간이다.', 'Daegu1.jpg' , '대구광역시 달서구 두류공원로 200', 'L053');
+INSERT INTO loc_img_info VALUES ('국립대구박물관', '국립대구박물관은 대구와 경상북도의 문화유산을 보존·연구·전시·교육하는 문화시설로, 1994년 12월 7일 문을 열었다.  이 공간에서는 우리 삶에서 큰 부분을 차지하는 옷의 역사를 국내외의 다양한 자료를 통해 교체·전시하고 있다. 야외 전시장에는 청동기 시대의 고인돌과 집터, 삼국 시대의 토기가마, 통일신라 시대의 석탑 등이 곳곳에 전시되어 있어, 산책하며 둘러볼 수 있다. 또한, 기획전시실과 특별전시실에서는 연중 다채롭고 흥미로운 전시가 열리며, 박물관 교육의 활성화를 위해 해솔관에 다양한 교육 시설을 마련하고 세대별·계층별 맞춤형 교육 프로그램을 연중 운영하고 있다.', 'Daegu2.jpg' , '대구광역시 수성구 청호로 321 ', 'L053');
+INSERT INTO loc_img_info VALUES ('대구미술관', '대구미술관은 대구광역시가 지원하는 시립미술관이다. 대구근현대미술의 역사적 가치를 연구하고 이를 재조명하여 대구미술의 전위성을 알릴 수 있는 전시뿐만 아니라 국내, 외 교류를 통해 동시대의 사회적 예술적 이슈와 세계 미술의 선도적 흐름을 소개하는 전시들을 기획해 선보이고 있다. 또한, 우수한 명사 초청 강연은 물론 어린이, 청소년 등 다양한 연령대의 시민들이 참여할 수 있는 아카데미프로그램을 비롯해 미술관 공간과 어우러지는 다채로운 공연들과 각종 이벤트 행사도 진행하고 있다. 미술관 3층에는 예술 관련 서적들을 접할 수 있는 미술정보센터와 휴식을 취할 수 있는 라운지가 마련되어 있다.', 'Daegu3.jpg' , '대구광역시 수성구 미술관로 40 대구미술관', 'L053');
+INSERT INTO loc_img_info VALUES ('김광석다시그리기길', '김광석 길은 故 김광석이 살았던 대봉동 방천시장 인근 골목에 김광석의 삶과 음악을 테마로 조성한 벽화거리이다. 2010년 ‘방천시장 문전성시 사업’의 하나로 방천시장 골목길에 11월부터 조성하기 시작한 김광석 길은 중구청과 11팀의 작가들이 참여하였다. 350m 길이의 벽면을 따라 김광석 조형물과 포장마차에서 국수 말아주는 김광석, 바다를 바라보고 있는 김광석 등 골목의 벽마다 김광석의 모습과 그의 노래 가사들이 다양한 모습의 벽화로 그려졌다. 매년 가을에는 방천시장과 동성로 일대에서 김광석 노래 부르기 경연대회를 개최하여 故 김광석을 추억하고 있다.', 'Daegu4.png' , '대구광역시 중구 달구벌대로 2238', 'L053');
+
+-- <광주>
+INSERT INTO loc_img_info VALUES ('무등산 국립공원', '국가지질공원이자 유네스코 세계지질공원으로 지정된 무등산국립공원은 광주, 담양, 화순에 걸쳐 있다. 서석대, 입석대로 불리는 주상절리를 포함해 기암괴석 등 61개의 자연경관을 자랑한다. 수달, 상제나비, 삵, 담비 등 멸종위기종을 포함해 총 4,012종의 동식물이 서식하는 것으로 알려져 있다. 광주의 모든 것을 품고 있는 무등산은 광주 도심에 위치해 있어서 계절마다 수많은 사람들이 찾는다.', 'Gwangju1.jpg' , '광주광역시 동구 동산길7번길 5 (운림동)', 'L062');
+INSERT INTO loc_img_info VALUES ('국립 5·18 민주묘지', '1980년에 일어난 광주민주화 운동의 희생자들이 묻힌 공동묘지로 5·18 묘역이라고도 한다. 문민정부 출범과 더불어 5·18 민주항쟁에 대한 재평가 작업이 이루어지고 5·18 희생자 묘역을 민주 성지로 가꾸려는 움직임이 뜻있는 국민들로부터 일어났다. 광주광역시는 중앙 정부의 지원을 받아 광주광역시 북구 운정동 산 34번지 165k㎡의 부지 위에 5·18 묘지를 조성하였다. 묘역 안에는 5·18 영령의 묘 764기(2017년 기준)가 있으며, 건축물 7동(민주의 문, 유영봉안소, 역사의 문, 숭모루, 추념문, 관리동, 휴게실)과 역사공간, 민주광장, 참배광장, 전시공간, 상징조형물, 광주민주화운동추모탑, 7개 역사마당(의병, 동학, 3·1 운동, 광주학생운동, 4·19 혁명, 광주민주화운동, 통일마당), 헌수기념비, 준공기념탑 등으로 구성되어 있다.', 'Gwangju2.jpg' , '광주광역시 북구 민주로 200 (운정동)', 'L062');
+INSERT INTO loc_img_info VALUES ('양림동 펭귄마을공예거리', '양림동 펭귄마을공예거리는 양림동 주민 센터 뒤에 펭귄 모양의 이정표를 따라 좁은 골목길을 들어가면 70·80년대 마을이 전시장으로 변모한 곳으로 무릎이 불편한 어르신이 뒤뚱뒤뚱 걷는 모습이 펭귄 같다고 하여 이름 지어진 마을이다. 마을 주민들은 과거에 화재로 타 방치되어 있던 빈집을 치우고 버려진 물건을 가져와 동네 벽에 전시하기 시작했으며, 마을 담벼락에는 “그때 그 시절 살아있음에 감사하자”라고 새겨 놓았다. 최승효 가옥, 우일사 선교사 사택, 오웬 기념각 등의 역사 문화도 보유하고 있다. 마을 한가운데 있는 펭귄 주막은 주민들의 사랑방, 조그맣지만 필요한 물건들이 다 있다. 가죽 공방, 섬유 공방, 목공방 등 다채로운 공방들이 공예 거리에 입주해 있어서 예쁜 공예품을 구매하거나 근대와 현대가 공존하는 레트로 감성의 업사이클링 공예체험도 가능하다.', 'Gwangju3.jpg' , '광주광역시 남구 백서로 92-8 (양림동)', 'L062');
+INSERT INTO loc_img_info VALUES ('광주패밀리랜드', '광주패밀리랜드는 광주광역시 북구 우치로에 위치한 호남 최대 규모의 놀이공원으로, 최신 놀이기구 24종, 국내 최대 높이의 관람차 빅아이, 호남 최장 슬로프를 갖춘 눈썰매장, 최첨단 카라반 캠핑장, 각종 공연과 오락, 체험시설 등을 갖춘 호남 최고의 테마파크이다. 패밀리랜드에는 다양한 놀이시설이 조성되어 있으며 코스에 따라 연인 코스, 가족코스, 어린이 코스 등으로 나누어 이용할 수 있다. 우선 연인 코스는 청룡열차, 카오스, 바이킹, 박치기왕, 타가 디스코, 나는 그네 등으로 연인들이 함께 즐기면 좋을 놀이 기구들이다. 가족코스는 패밀리 열차, 사막의 폭풍 등 가족 단위로 아이와 부모가 함께 즐기면 좋은 놀이 기구이다. 이외에 어린이 범퍼카, 꼬마 비행기, 회전목마 등 어린이 전용 놀이기구도 구비되어 있다.', 'Gwangju4.jpg' , '광주광역시 북구 우치로 677 (생용동)', 'L062');
+
+-- <대전>
+INSERT INTO loc_img_info VALUES ('대전오월드', '대전오월드는 주랜드+플라워랜드+조이랜드+버드랜드+나이트 유니버스의 복합적인 공간으로 구성된 온 가족이 함께 즐길 수 있는 중부권 이남 최대 규모의 테마공원이다. 주랜드에서는 오월드에서만 볼 수 있는 한국 늑대 사파리가 있으며, 버스 안에서 야생 동물을 생동감 있게 관람할 수 있는 아프리카 사파리와 그 외 다양한 동물들을 만나볼 수 있다. 자이언트드롭, 후룸라이드, 슈퍼바이킹 등 스릴 넘치는 놀이기구를 조이랜드에서 체험할 수 있으며, 꽃과 물과 빛이 어우러진 향기로운 꽃의 세계인 플라워랜드, 희귀 새와 열대 정원이 어우러진 환상의 버드체험까지 즐길 수 있다. 또한, 다양한 디지털 미디어 장치와 흥미로운 스토리텔링을 더한 신비로운 나이트 유니버스에서 홀로그램쇼와 음악분수 워터쇼 등 환상적인 밤의 시간을 경험할 수 있다.', 'Daejeon1.jpg' , '대전광역시 중구 사정공원로 70 (사정동)', 'L042');
+INSERT INTO loc_img_info VALUES ('뿌리공원', '대전광역시 중구 침산동 일원 3만 6천여 평의 부지에 세계 최초로 성씨를 상징하는 조형물 및 한국족보박물관, 각종 편의시설을 갖추고 있으며 효를 주제로 1997년 11월 1일 개장한 테마공원이다. 충효사상 및 주인정신을 함양시키는 교육공원이면서 가족 단위의 다양한 이벤트 행사가 마련된 가족친화 공원이자 천혜의 자연경관을 배경으로 한 도심 속의 자연공원으로서의 특색을 잘 나타내고 있다. 자신의 뿌리를 되찾을 수 있는 성씨별 조형물과 사신도 및 12 지지를 형상화한 뿌리 깊은 샘물, 각종 행사를 할 수 있는 수변무대, 공원 중심에 자리 잡은 잔디광장과 공원을 한눈에 바라볼 수 있는 전망대, 팔각 정자뿐만 아니라 산림욕장, 효문화정원, 힐링쉼터 등 다양한 시설이 갖추어져 있다. 수변무대에서 펼쳐지는 문화·예술공연과 매년 열리는 대전효문화뿌리축제 등 다양한 행사도 즐길 수 있는 유익한 공원이다.', 'Daejeon2.jpg' , '대전광역시 중구 뿌리공원로 79 뿌리공원', 'L042');
+INSERT INTO loc_img_info VALUES ('대전아쿠아리움', '대전아쿠아리움은 전쟁에 대비해 지하 방공호로 활용됐던 대전 도심의 천연동굴을 변화시킨 수족관이다. 국내 최초이자 최대인 담수어 아쿠아리움이다. 다른 나라의 다양한 담수어류를 국가별로 만나볼 수 있고, 테마별로 재미있게 꾸며진 어류들을 볼 수 있다. 또한 세계적인 멸종 위기 동물을 보존 전시해 생태계 교육까지 함께 이루어지는 박물관. 어류뿐만 아니라 국내에서 보기 힘든 희귀 동물들을 가까이에서 직접 보고 만지고 먹이도 줄 수 있는 체험활동을 제공한다. 다만, 대전아쿠아리움 특성상 생물 컨디션에 따라 체험이나 프로그램 일정이 변경될 수 있다. 다이버의 수중 시간부터 터치풀, 비단잉어 먹이 체험, 닥터피시 체험관, 악어쇼 관람관, 체험 동물원 먹이 주기 체험, 조류 체험장, 인어공주 관람까지 다양한 체험을 제공한다.', 'Daejeon3.jpg' , '대전광역시 중구 보문산공원로 469 (대사동)', 'L042');
+INSERT INTO loc_img_info VALUES ('티놀자 애니멀 파크', '티놀자 애니멀파크는 대전광역시 유성구에 위치하고 있는 곳으로 동물교감과 디지털체험을 통하여 어린이들에게 고품질의 문화 콘텐츠와 다양한 경험을 제공하고자 한다. 토끼, 염소, 파충류, 물고기에 이르기까지 다양한 동물을 볼 수 있으며 어린이들이 마음껏 뛰어놀 수 있는 놀이공간도 조성하였다. 스탬프 투어, 사육사와 함께하는 동물교감 등의 체험 프로그램이 준비되어 있으며 한옥카페 시설도 이용이 가능하다.', 'Daejeon4.jpg' , '대전광역시 유성구 대덕대로989번길 9-51', 'L042');
+
+
+-- <울산>
+INSERT INTO loc_img_info VALUES ('차리마을', '차리마을은 울산의 숨은 벚꽃 명소로 차분한 분위기 속에서 봄 여행을 즐길 수 있다. 인근 유진목장을 방문한 이들을 통해 알음알음 찾던 곳이 SNS를 통해 알려지기 시작했다. 군도 20호 선변 차리저수지에서 중차리와 하차리 구량천을 따라 길이 1.5km 양쪽으로 서있는 1,000여 그루의 이곳의 벚꽃나무는 차리마을 주민들이 직접 식재하고 가꾼 것으로 봄이면 하얀 벚꽃 터널길을 만든다. 주차장 부근의 차리교에서 차리마을 회관까지의 길이 가장 절정을 이루는 구간이다. 차를 타고 드라이브를 해도 좋고 한적한 전원 풍경을 감상하며 걷기도 좋다.', 'Ulsan1.jpg' , '울산광역시 울주군 두서면 구량리 1062-25', 'L052');
+INSERT INTO loc_img_info VALUES ('태화강동굴피아', '태화강동굴피아는 일제강점기 강제 노역 등 아픈 역사를 지닌 곳을 체험공간으로 탈바꿈하였다. 원래 이곳은 일제강점기 때 만들어진 인공 동굴이었다. 일본군은 태평양전쟁 중이었던 1942년 전시 상황에 대비하여 울산비행장을 군용 비행장으로 개조하였다. 울산비행장 운영과 관련하여 군량미, 항공유 등 각종 군수 물자를 보관하기 위해 울산 신정동의 남산, 여천천 주변 대현동에 있는 산 등에 여러 개의 인공 동굴을 만들었다.', 'Ulsan2.jpg' , '울산광역시 남구 남산로 306 (신정동)', 'L052');
+INSERT INTO loc_img_info VALUES ('석남사(울산)', '석남사는 울산사람들에게는 늘 열려있는 휴식처로서 늘 푸르른 산림과 여름에는 시원한 계곡을 제공하며 한겨울에는 가지산의 설경과 어울려 가람을 하얗게 덮은 눈은 우리들에게 절경을 보여줍니다.', 'Ulsan3.jpg' , '울산광역시 울주군 상북면 석남로 557', 'L052');
+INSERT INTO loc_img_info VALUES ('자수정 동굴나라', '영남 알프스라 일컫는 신불산 자락에 위치한 국내 최대의 동굴 테마파크 ‘자수정 동굴나라’는 세계 5대 보석 중에 하나인 자수정을 채광하던 보석 광산이다. 비록 자수정 채취를 위해 뚫린 갱도이지만 트럭이 드나들 정도로 넓은 데다 총규모 500,000m²의 자연 속에 1층과 2층으로 이어진 2.5km의 동굴로, 내부 면적 15,000m², 연평균 온도 12~16℃로 여름에는 냉방 동굴, 겨울에는 난방 동굴로 그 유명세를 전국은 물론 일본, 중국, 동남아 등 세계 속으로 알려가고 있다.', 'Ulsan4.jpg' , '울산광역시 울주군 자수정로 212 자수정동굴나라', 'L052');
+
+-- <충북>
+INSERT INTO loc_img_info VALUES ('구인사(단양)', '구인사는 대한불교 천태종의 총본산 사찰로서, 전국에 140개나 되는 절을 관장하고 있다. 1945년에 건립되었으며, 1966년 현대식 콘크리트조로 지은 이색적인 건물이다. 소백산 국망봉을 중심으로 장엄하게 늘어선 봉우리 가운데 하나인 연화봉 아래에 자리 잡고 있으며, 상월원각 스님이 1945년에 이곳에 손수 칡덩굴을 얽어 삼간초암을 짓고 정진 끝에 대도를 성취하여 구인사를 창건하게 되었다.', 'Chungbuk1.jpg' , '충청북도 단양군 영춘면 구인사길 73', 'L043');
+INSERT INTO loc_img_info VALUES ('포레스트 리솜 해브나인 스파', '포레스트 리솜 해브나인 스파는 충북 제천시 백운면에 자리 잡고 있다. 힐링 스파존에는 인체 경락 부위에 따라 다양한 수압 마사지를 즐길 수 있는 바데 풀을 비롯해 물에너지 스파, 사상체질 스파 등의 시설이 갖춰져 있다. 아쿠아 플레이존은 보호자와 아이들이 함께 즐길 수 있는 놀이 풀로 키즈 슬라이드와 유수 풀, 비치 풀로 구성되어 있다. 야외 스파존에는 숲을 바라보며 야외에서 즐기는 인피니티 풀 등 다양한 시설이 마련되어 있다.', 'Chungbuk2.jpg' , '충청북도 제천시 백운면 금봉로 365', 'L043');
+INSERT INTO loc_img_info VALUES ('청남대', '청남대는 대청호반에 자리 잡고 있는 청남대는 ‘따뜻한 남쪽의 청와대’라는 뜻으로 1983년부터 대한민국 대통령의 공식 별장으로 이용되던 곳이다. 역대 대통령들은 청남대에서 다양한 인사들과 회동하며 지역현안을 논의하는 한편, 여러 국빈들을 맞이하기도 했다. 184만 4천㎡로, 주요 시설로는 본관을 중심으로 골프장, 그늘집, 헬기장, 양어장, 오각정, 초가정 등이 있고, 개방 전까지 총 다섯 분의 대통령이 88회 이용하였으며, 2003년 4월 18일 일반인에게 개방되었다.', 'Chungbuk3.jpg' , '충청북도 청주시 상당구 문의면 청남대길 646', 'L043');
+INSERT INTO loc_img_info VALUES ('초평호 미르309 출렁다리', '초평호 미르 309 출렁다리는 초평호 산책로를 따라 2시간 정도 순환하는 산책코스이다. 총길이 309m에 달하며 다리 중간에 주탑이 없는 구조로 설계되어 있다. 출렁다리가 개통되며 초롱길, 하늘다리와 연결되는 순환형 산책로가 완성되어 더욱 수려해진 자연을 감상하며 가볍게 산책을 즐기기 좋다. ‘미르’는 용을 뜻하는 순우리말로, 다리의 이름에는 지역의 상징성과 문화적 이미지를 담았다.', 'Chungbuk4.jpg' , '충청북도 진천군 초평면 미르숲길 179', 'L043');
+
+
+-- 관광지 (충남)
+INSERT INTO loc_img_info 
+VALUES ('백제문화단지', '백제문화단지는, 충청남도 부여군 규암면 백제문로 374에 위치하고 있으며 공공시설인 사비성(왕궁,능사,생활문화마을 등), 백제역사문화관, 한국전통문화학교와 민자시설인 숙박시설(콘도,스파빌리지), 테마파크, 테마아울렛, 체육시설(대중골프장) 등으로 구성되어 있습니다.', 'Chungbuk11.webp' , '충청남도 부여군 규암면 백제문로 455(합정리 575로)', 'L041');
+
+INSERT INTO loc_img_info 
+VALUES ('부여궁남지', '궁남지는 신라 선화공주와 결혼한 무왕의 서동요 전설이 깃든 곳이다.『삼국사기』에 “백제 무왕 35년(634) 궁의 남쪽에 못을 파 20여리 밖에서 물을 끌어다가 채우고, 주위에 버드나무를 심었으며, 못 가운데는 섬을 만들었는데 방장선산(方丈仙山)을 상징한 것”이라는 기록이 있다.?', 'Chungbuk22.webp' , '충청남도 부여군 부여읍 궁남로 52', 'L041');
+
+INSERT INTO loc_img_info 
+VALUES ('국립 생태원', '국립생태원 에코리움은 세계 5대 기후를 재현한 열대관, 사막관, 지중해관, 온대관, 극지관 등 각 기후 대표 동식물 1,600여 종이 함께 전시되어 살아있는 생태계를 생생하게 체험할 수 있다. 또한 생태계의 기본 개념을 배울 수 있는 상설주제전시관 1·2, 생태계 주제가 열리는 기획전시관, 눈높이별 생태교육이 이루어지는 에코랩 그리고 어린이 생태글방, 4D 영상관 등이 있다. ', 'Chungbuk33.webp' , '
+충청남도 서천군 마서면 금강로 1210', 'L041');
+
+INSERT INTO loc_img_info 
+VALUES ('독립기념관', '독립기념관은 외침을 극복하고 민족의 자주와 독립을 지켜온 우리 민족의 국난극복사와 국가발전사에 관한 자료를 수집·보존·전시·조사·연구함으로써 민족문화의 정체성을 확립 하고 국민의 투철한 민족정신과 국가관을 정립하는데 이바지함을 목적으로 1987년 8월15일 온 국민의 정성어린 성금으로 건립	되었다.', 'Chungbuk44.webp' , '	충청남도 천안시 동남구 목천읍 독립기념관로 1', 'L041');
+
+
+
+
+
+-- 'L063', '전북'
+
+INSERT INTO loc_img_info 
+VALUES ('내장산국립공원','해마다 단풍 천지를 이루는 가을뿐만 아니라 봄에는 철쭉과 벚꽃, 여름에는 짙고 무성한 녹음으로, 겨울에는 바위 절벽의 멋진 비경과 아름다운 설경, 그리고 사계절 내내 갖가지 야생화가 흐드러지게 만개하여 오가는 사람들을 감동시킨다.','Jeollabuk11.jpg','전북특별자치도 정읍시 내장호반로 328','L063');
+
+INSERT INTO loc_img_info 
+VALUES ('전주 한옥마을','향교길, 최명희길, 경기전길 등을 거닐면 한옥마을의 아름다운 골목길 모습과 한옥의 정취를 느낄 수 있다. 전주 한옥마을에 밤이 찾아오면 태조로를 밝히는 천사초롱과 한옥담장을 더욱 돋보이게 만드는 조명들로 감미로운 야경을 감상할 수 있다. 또 전주난장과 자만벽화마을, 야시장, 청년몰 등 이색 여행공간도 만날 수 있다.','Jeollabuk22.jpg','	전북특별자치도 전주시 완산구 기린대로 99 (남노송동)','L063');
+
+INSERT INTO loc_img_info 
+VALUES ('임실치즈테마파크','임실치즈테마파크는 임실치즈를 테마로 한 국내 유일 체험형 관광지로 1960년 지정환 신부가 산양 2마리를 키운 것으로 시작, 한국 치즈 산업의 중심지로 자리매김하고 있다. 임실군 성수면 도인리 13만 제곱미터, 축구장 19개 넓이의 드넓은 초원 위에 조성되었으며, 임실치즈의 맛과 멋이 깃든 체험교육을 진행하고 있다. 식당에서는 이곳에서 생산한 치즈 요리를 맛볼 수 있으며 드넓은 초지, 유럽풍의 아름다운 경관은 스위스 아펜젤러를 온듯한 착각을 불러 일으킨다.','Jeollabuk33.jpg','전북특별자치도 임실군 성수면 도인2길 50','L063');
+
+INSERT INTO loc_img_info 
+VALUES ('군산근대역사박물관','군산근대역사박물관은 ‘역사는 미래가 된다’는 신조로 과거 무역항으로 해상물류유통의 중심지였던 옛 군산의 모습과 전국 최대의 근대문화자원을 전시하여 서해 물류 유통의 천 년, 세계로 뻗어 가는 국제 무역항 군산의 모습을 보여주는 박물관이다. 1층에는 해양물류역사관, 어린이체험관, 기증전시실이 위치해 있으며, 2층에는 근대자료규장각실, 시민 열린 갤러리가, 3층에는 근대생활관, 기획전시실이 있다.','Jeollabuk44.jpg','전북특별자치도 군산시 해망로 240 군산근대역사박물관','L063');
+
+
+-- 'L061', '전남'
+INSERT INTO loc_img_info 
+VALUES ('목포근대역사관 1관','목포에서 가장 오래된 이 건물은 1898년 10월 목포일본영사관이 목포에 설치됨에 따라 영사관으로 지은 것이다. 일본은 영사관이 건립되기 전까지 조선정부로부터 만호청(1895년 폐진 된 목포진)을 빌려 사용하였고, 유달산 고지대에 가건물을 지어 이관하였으며 다시 현재의 위치인 대의동에 목포일본영사관과 부대시설인 경찰서·우편국 등을 함께 마련하였다.','Jeollanam11.jpg','전라남도 목포시 영산로29번길 6','L061');
+INSERT INTO loc_img_info 
+VALUES ('송광사묘법연화경찬술','목조문화재가 많은 사찰로 경내에는 약 80여 동의 건물이 있고, 16 국사의 진영을 봉안하는 국사전 등의 국보 3점을 비롯하여 하사당, 약사전, 영산전 등 보물 13점, 천연기념물인 쌍 향수 등 국가문화재 17점과 지정 국사사리합 등 지방문화재 10점을 포함, 모두 27점의 문화재가 보존되어 있다.','Jeollanam22.jpg','전라남도 순천시 송광면 송광사안길 100 (송광면)','L061');
+INSERT INTO loc_img_info 
+VALUES ('와온해변','와온해변은 전라남도 순천시 해룡면 상내리 와온마을에 위치한 해변이다. 한 스님이 인근 상봉우리에 있는 바위를 보고 소가 누워 있는 형상을 하고 있으며, 산 아래로 따뜻한 물이 흐른다고 말해 이후 부터 와온(臥溫)이라 부른다고 한다. 낙조풍경이 아름다운 곳으로 와온해변 앞에 있는 솔섬 너머로 해가 넘어가는 모습은 장관을 연출 시킨다. ','Jeollanam33.jpg','전라남도 순천시 해룡면 상내리','L061');
+INSERT INTO loc_img_info 
+VALUES ('아쿠아플라넷 여수','아쿠아플라넷 여수는 전남 여수시 여수 신항 제2부두 인근에 자리한 국내 2위 규모의 아쿠아리움으로, 아시아 최대 규모의 프리미엄 해양 테마파크이다. 아쿠아(Aqua)는 바다의 웅장함, 그리고 해양과학과 인간의 만남을 뜻하며, 플라넷(Planet)은 ‘아쿠아플라넷에서만 느낄 수 있는 첨단과학의 콘셉트를 관람객이 직접 우주 행성을 탐험하듯 즐기게 한다’는 의미를 가지고 있다.','Jeollanam44.jpg','전라남도 여수시 오동도로 61-11 (수정동)','L061');
+
+
+-- 'L054', '경북'
+INSERT INTO loc_img_info 
+VALUES ('불국사','불국사에서 산등성이를 타고 약 3㎞ (포장도로 석굴로는 9㎞) 정도 올라가면 동양 제일의 걸작으로 알려진 여래좌상의 본존불이 동해를 마주 바라보고 있는 유명한 석굴암이 있다. 불국사, 석굴암은 1995년 12월 6일 해인사 장경판전과 종묘와 함께 ‘유네스코 세계 문화유산’으로 공식 등재되어 국제적으로 더욱 유명해졌다.','Gyeongsangbuk11.jpg','경상북도 경주시 불국로 385 (진현동)','L054');
+INSERT INTO loc_img_info 
+VALUES ('하회마을','하회마을에서는 하회별신굿탈놀이를 상설공연으로 진행하고, 매년 가을 안동국제탈춤페스티벌을 진행하며 주변에는 신라 시대에 창건되었다는 봉정사, 고산서원, 귀래정, 계명산 자연휴양림, 학가산 자연휴양림, 와룡산 등 다양한 볼거리가 많은 곳이다. 특히 2010년 7월 31일 안동 하회마을과 경주 양동마을이 ‘한국의 역사마을’로서 유네스코 세계문화유산에 등재됐다. ','Gyeongsangbuk22.jpg','경상북도 안동시 풍천면 전서로 186','L054');
+INSERT INTO loc_img_info 
+VALUES ('환호공원','영일대해수욕장 끝 해안마을 뒷동산에 위치한 환호공원은 시민들의 문화와 여가, 휴식을 즐길 수 있는 포항 최대 규모의 공원이다. 해안 절벽과 수목들의 자연 속에 현대적 미를 조화롭게 가미한 광활한 공간에는 포항시립미술관과 야외공연장, 어린이도서관, 간이동물원, 어린이모험 놀이터, 환호전통놀이공원, 바닥분수, 전망대가 있다. ','Gyeongsangbuk33.jpg','	경상북도 포항시 북구 환호공원길 30','L054');
+INSERT INTO loc_img_info 
+VALUES ('죽변해안스카이레일','죽변해안스카이레일은 죽변 승하차장과 봉수항을 오가는 2.8㎞의 코스로 이루어져 있으며, 자동으로 움직이는 모노레일로 여유롭게 멋진 자연경관을 관람할 수 있다.','Gyeongsangbuk44.jpg','경상북도 울진군 죽변면 죽변중앙로 235-8','L054');
+
+-- 'L055', '경남'
+INSERT INTO loc_img_info 
+VALUES ('김해가야테마파크','김해가야테마파크는 김해시민에게 편안한 휴식을 제공하는 일상 휴식 공간이며 가족·연인·친구와 함께 다양한 문화를 접할 수 있는 복합문화공간이다. 우리 민족의 찬란한 유산인 가야의 역사를 놀이, 체험, 전시를 통해 보고, 듣고, 만지며 배울 수 있는 에듀케이션 + 엔터테인먼트 체감형 테마파크이다. 볼거리, 먹거리, 쉴 거리가 다양하게 준비되어 있으며, 카라반 캠핑장과 물놀이 시설도 구비되어 있다. 무료 셔틀버스를 운행하고 있어 접근성이 좋다. 또한 온라인 티켓을 구매하면 보다 저렴한 가격에 이용할 수 있다.','Gyeongsangnam11.jpg','경상남도 김해시 가야테마길 161 (어방동)','L055');
+INSERT INTO loc_img_info 
+VALUES ('남해독일마을','남해 독일마을은 파독 광부 간호사들이 은퇴 후 귀국하여 정착한 마을이다. 전통 독일식 주택을 볼 수 있고 독일 교포들이 생활하고 있다. 이 중에서 30여 집 정도가 부업으로 민박을 하고 있다. 집집마다 특색 있는 인테리어와 서비스로 많은 관광객들이 찾는다고 한다. 바로 앞으로 펼쳐진 방조어부림의 시원한 바다와 남해안에서 가장 아름다운 해안 드라이브 코스인 물미해안도로가 있다.','Gyeongsangnam22.jpg' ,'경상남도 남해군 독일로 89-7','L055');
+INSERT INTO loc_img_info 
+VALUES ('이순신 공원','이순신공원(구 한산대첩기념공원)은 이충무공의 정신을 기리는 공원으로 통영시 동호항방파제 인근에 위치해 있으며 연 49만 명의 관광객이 방문하는 통영시의 대표 관광지이다. 1592년 8월 14일 조선 수군과 일본 수군이 해상주도권을 다툰 전투에서 충무공 이순신 장군이 이끄는 조선 수군이 일본 수군에 대승하여 식량 보급로를 확보하고 일본 수군의 전의를 상실하게 만든 임진왜란의 최대 승첩지를 기념하기 위해 조성된 공원이다.','Gyeongsangnam33.jpg' ,'경상남도 통영시 정량동 688-1','L055');
+INSERT INTO loc_img_info 
+VALUES ('스카이라인 루지','스카이라인 루지는 다운힐 라이딩을 위해 특수하게 제작된 루지카트를 타고, 4개의 트랙 총 3.8km 구간을 내려오는 어드벤처 활동이다. 출발지점까지는 스카이라이드(리프트)를 타고 이동한다. 구불구불한 코스, 커브구간, 터널 등 스릴을 맛볼 수 있도록 설계된 트랙을 따라 가족, 친구, 연인과 함께 짜릿한 라이딩을 즐길 수 있다. ','Gyeongsangnam44.jpg' ,'경상남도 통영시 발개로 178','L055');
+
+-- 'L064', '제주'
+INSERT INTO loc_img_info 
+VALUES ('한라산 (제주도 국가지질공원)','한라산은 능히 은하수를 잡아당길 만큼 높은 산(雲漢可拏引也)이란 뜻을 가졌다. 예부터 신선들이 산다고 해서 영주산(瀛州山)이라 불리기도 했고 금강산(金剛山), 지리산(智異山)과 더불어 우리나라 삼신산(三神山)의 하나로 여겨져 왔다. 또 다양한 식생(植生) 분포를 이루어 학술적 가치가 매우 높은 동·식물의 보고(寶庫)로써 1966년 10월 천연기념물로 지정, 보호되고 있으며, 1970년 3월에 국립공원으로 지정되었다.','jeju11.jpg','제주특별자치도 제주시 1100로 2070-61','L064');
+INSERT INTO loc_img_info 
+VALUES ('제주민속촌','제주민속촌에서는 제주는 물론 우리나라의 향토수종 및 꽃들을 식재하여 사계절 내내 꽃들을 볼 수 있으며 재래흑돼지 및 가금, 가축을 사육하고 있어 자연학습장 기능도 겸하고 있다. 이외에도 다양한 테마별 전시장과 체험가옥, 전통민속놀이 체험장을 통해 다양한 볼거리와 체험거리를 제공하고 있다.','jeju22.jpg','제주특별자치도 서귀포시 표선면 민속해안로 631-34','L064');
+INSERT INTO loc_img_info 
+VALUES ('스누피가든','스누피 가든 하우스는 감정에 솔직하고 개성 있는 피너츠 친구들을 만나 그들 간의 상호 관계를 통한 공감과 위로의 메시지를 얻는 곳이다. 가든 하우스의 테마홀은 피너츠 에피소드에 담긴 일상의 이야기와 ‘Peanuts, Nature & Life’를 주제로 나의 일상을 연결할 수 있는 공간이다. 5개의 테마홀과 카페 스누피, 피너츠 스토어에서 걷고, 보고, 먹고 쉬면서 피너츠 캐릭터를 통해 지금의 나에게 휴식과 위로의 메시지를 건네어보길 바란다. ','jeju33.jpg','제주특별자치도 제주시 구좌읍 금백조로 930스누피 공원','L064');
+INSERT INTO loc_img_info 
+VALUES ('김녕미로공원','김녕미로공원의 수벽을 리우고 있는 나무는 랠란디나무는 사계절 푸른 상록수로서 향기는 사람의 정신을 맑게 해주고 심리적 압박감을 완화시켜주는 효과를 지니고 있다. 미로의 붉은빛이 감도는 바닥은 제주 천연 화산석이 송이이며 오염된 공기를 정화시키고 인체의 혈액 순환을 촉진시키는 효과를 지니고 있다.','jeju44.jpg','제주특별자치도 제주시 구좌읍 만장굴길 122','L064');
+
+
+-- 6. 호텔 insert
+INSERT INTO loc_hotel_info VALUES('파라스파라 서울', '4', '319000', '서울특별시 강북구 삼양로 689', 'seoul5.jpg', 'L02');
+INSERT INTO loc_hotel_info VALUES('글래드 여의도', '5', '128000', '서울특별시 영등포구 의사당대로 16', 'seoul6.jpg', 'L02');
+INSERT INTO loc_hotel_info VALUES('메이필드 호텔 서울', '5', '163000', '서울특별시 강서구 방화대로 94', 'seoul7.jpg', 'L02');
+INSERT INTO loc_hotel_info VALUES('신라스테이 광화문', '4', '172000', '서울특별시 종로구 삼봉로 71', 'seoul8.jpg', 'L02');
+
+-- 경기
+INSERT INTO loc_hotel_info VALUES('소노캄 고양', '5', '133000', '경기도 고양시 일산동구 태극로 20', 'gyeonggi5.jpg', 'L031');
+INSERT INTO loc_hotel_info VALUES('테이크 호텔 광명', '4', '111000', '경기도 광명시 신기로 22', 'gyeonggi6.jpg', 'L031');
+INSERT INTO loc_hotel_info VALUES('라마다 프라자 수원', '4', '134000', '경기도 수원시 팔달구 중부대로 150', 'gyeonggi7.jpg', 'L031');
+INSERT INTO loc_hotel_info VALUES('마에스트로 호텔', '3', '123000', '경기도 안성시 양성면 안성맞춤대로 2134-36', 'gyeonggi8.jpg', 'L031');
+
+-- 인천
+INSERT INTO loc_hotel_info VALUES('파라다이스시티', '5', '410000', '인천광역시 중구 영종해안남로321번길 186', 'incheon5.jpg', 'L032');
+INSERT INTO loc_hotel_info VALUES('인스파이어 리조트', '4', '248000', '인천광역시 중구 공항문화로 127', 'incheon6.jpg', 'L032');
+INSERT INTO loc_hotel_info VALUES('네스트 호텔', '5', '130000', '인천광역시 중구 영종해안남로 19-5', 'incheon7.jpg', 'L032');
+INSERT INTO loc_hotel_info VALUES('더위크앤 리조트', '4', '103000', '인천광역시 중구 용유서로 379 더위크앤 리조트', 'incheon8.jpg', 'L032');
+
+
+-- 강원
+INSERT INTO loc_hotel_info VALUES('세인트존스 호텔', '4', '95000', '강원 강릉시 창해로 307', 'gangwon5.jpg', 'L033');
+INSERT INTO loc_hotel_info VALUES('스카이베이 경포', '5', '112000', '강원 강릉시 해안로 476 스카이베이호텔 경포', 'gangwon6.jpg', 'L033');
+INSERT INTO loc_hotel_info VALUES('더잭슨나인스', '3', '72000', '강원 춘천시 중앙로 193', 'gangwon7.jpg', 'L033');
+INSERT INTO loc_hotel_info VALUES('탑스텐 강릉', '4', '81000', '강원 강릉시 옥계면 헌화로 455-34', 'gangwon8.jpg', 'L033');
+
+--부산
+INSERT INTO loc_hotel_info VALUES('시그니엘 부산', '5', '297000', '부산 해운대구 달맞이길 30', 'busan5.jpg', 'L051');
+INSERT INTO loc_hotel_info VALUES('라발스 호텔 부산', '4', '93000', '부산 영도구 봉래나루로 82', 'busan6.jpg', 'L051');
+INSERT INTO loc_hotel_info VALUES('신라스테이 서부산', '4', '73000', '부산 강서구 명지국제7로 38', 'busan7.jpg', 'L051');
+INSERT INTO loc_hotel_info VALUES('파크 하얏트 부산', '4', '472000', '부산 해운대구 마린시티1로 51', 'busan8.jpg', 'L051');
+
+-- 
+
+-- <대구> L053
+INSERT INTO loc_hotel_info VALUES('호텔 아젤리아','3','100000','대구광역시 달성군 유가읍 용리','Daegu5.jpg','L053');
+INSERT INTO loc_hotel_info VALUES('대구 그랜드 호텔','5','124000','대구광역시 수성구 동대구로 305','Daegu6.jpg','L053');
+INSERT INTO loc_hotel_info VALUES('대구 수성 더 아르코 호텔 라이온즈파크점','5','112000','대구광역시 수성구 알파시티1로40길 6 (대흥동)','Daegu7.jpg','L053');
+INSERT INTO loc_hotel_info VALUES('대구 메리어트 호텔','4','396000','대구광역시 동구 동부로26길 6','Daegu8.jpg','L053');
+
+-- <광주> L062
+INSERT INTO loc_hotel_info VALUES('유탑부티크호텔앤레지던스','4','96300','광주광역시 서구 시청로 53 (치평동)','Gwangju5.jpg','L062');
+INSERT INTO loc_hotel_info VALUES('이끌림 비지니스호텔 하남','3','27300','광주광역시 광산구 무진대로212번길 14-27 (우산동)','Gwangju6.jpg','L062');
+INSERT INTO loc_hotel_info VALUES('홀리데이 인 광주 호텔','4','213500','광주광역시 서구 상무누리로 55','Gwangju7.jpg','L062');
+INSERT INTO loc_hotel_info VALUES('호텔더스팟','4','46900','광주광역시 북구 앰코로 32 (오룡동)','Gwangju8.jpg','L062');
+
+-- <대전> L042 -- 첫번째 호텔 작성되면 인서트하기
+INSERT INTO loc_hotel_info VALUES('호텔 오노마 대전, 오토그래프 컬렉션','5','240000','대전광역시 유성구 엑스포로 1','Daejeon5.jpg','L042');
+INSERT INTO loc_hotel_info VALUES('대전라마다 호텔','4','88500','대전광역시 유성구 계룡로 127 라마다호텔','Daejeon6.jpg','L042');
+INSERT INTO loc_hotel_info VALUES('더휴식 아늑호텔 대전 유성온천 2호점','4','81000','대전광역시 유성구 계룡로123번길 36 (봉명동)','Daejeon7.jpg','L042');
+INSERT INTO loc_hotel_info VALUES('호텔 오노마','4','297000','대전광역시 유성구 엑스포로 1 (도룡동)','Daejeon8.jpg','L042');
+
+-- <울산> L052
+INSERT INTO loc_hotel_info VALUES('호텔현대 바이 라한 울산','4','159000','울산광역시 동구 방어진순환도로 875','Ulsan5.jpg','L052');
+INSERT INTO loc_hotel_info VALUES('V온천모텔','4','30000','울산광역시 울주군 상북면 알프스온천2길 10','Ulsan6.jpg','L052');
+INSERT INTO loc_hotel_info VALUES('어련당','5','54000','울산광역시 중구 산전길 61 어련당','Ulsan7.jpg','L052');
+INSERT INTO loc_hotel_info VALUES('신라스테이 울산','5','81000','울산광역시 남구 삼산로 200 (삼산동)','Ulsan8.jpg','L052');
+
+-- <충북> L043
+INSERT INTO loc_hotel_info VALUES('유원재','4','160000','충청북도 충주시 수안보면 주정산로 6','Chungbuk5.jpg','L043');
+INSERT INTO loc_hotel_info VALUES('리솜포레스트(제천)','4','310000','충청북도 제천시 백운면 금봉로 365','Chungbuk6.jpg','L043');
+INSERT INTO loc_hotel_info VALUES('일라이트 호텔','4','120000','충청북도 영동군 영동읍 영동힐링로 159','Chungbuk7.jpg','L043');
+INSERT INTO loc_hotel_info VALUES('더리버에스 풀빌라(The River. S)','4','260000','충청북도 청주시 상당구 옥화2길 13-29','Chungbuk8.jpg','L043');
+
+
+
+-- 'L041', '충남'
+INSERT INTO loc_hotel_info VALUES('초이한옥호텔','4','46000','충청남도 공주시 금성동 번지 1층','Chungcheongnam01.jpg','L041');
+INSERT INTO loc_hotel_info VALUES('롯데리조트부여','4','178000','충청남도 부여군 규암면 백제문로 400','Chungcheongnam02.jpg','L041');
+INSERT INTO loc_hotel_info VALUES('서천 소곡스테이','3','35000','충청남도 서천군 마서면 장산로 763','Chungcheongnam03.jpg','L041');
+INSERT INTO loc_hotel_info VALUES('신라스테이 천안','4','126000','충청남도 천안시 서북구 동서대로 177','Chungcheongnam04.jpg','L041');
+
+-- 'L063', '전북'
+INSERT INTO loc_hotel_info VALUES('군산스테이호텔','5','118000','전북특별자치도 군산시 성산면 철새로 56','Chungbuk01.jpg','L063');
+INSERT INTO loc_hotel_info VALUES('라한호텔 전주','4','105000','전북특별자치도 전주시 완산구 기린대로 85','Chungbuk02.jpg','L063');
+INSERT INTO loc_hotel_info VALUES('엘리스테이','4','195000','전북특별자치도 정읍시 서당길 14 ','Chungbuk03.jpg','L063');
+INSERT INTO loc_hotel_info VALUES('왕의지밀 한옥호텔','5','178000','전북특별자치도 전주시 완산구 춘향로 5218-20','Chungbuk04.jpg','L063');
+
+-- 'L061', '전남'
+INSERT INTO loc_hotel_info VALUES('군산스테이호텔','5','118000','전북특별자치도 군산시 성산면 철새로 56','Chungbuk01.jpg','L061');
+INSERT INTO loc_hotel_info VALUES('라한호텔 전주','4','105000','전북특별자치도 전주시 완산구 기린대로 85','Chungbuk02.jpg','L061');
+INSERT INTO loc_hotel_info VALUES('엘리스테이','4','195000','전북특별자치도 정읍시 서당길 14 ','Chungbuk03.jpg','L061');
+INSERT INTO loc_hotel_info VALUES('왕의지밀 한옥호텔','5','178000','전북특별자치도 전주시 완산구 춘향로 5218-20','Chungbuk04.jpg','L061');
+
+
+
+-- 'L054', '경북'
+INSERT INTO loc_hotel_info VALUES('코모도호텔','4','319000','경상북도 경주시 보문로 422','Gyeongsangbuk01.jpg','L054');
+INSERT INTO loc_hotel_info VALUES('안동그랜드호텔','4','114000','경상북도 안동시 성곡동 관광단지로 346-84','Gyeongsangbuk02.jpg','L054');
+INSERT INTO loc_hotel_info VALUES('라한호텔 포항','4','93000','경상북도 포항시 북구 삼호로265번길 1 ','Gyeongsangbuk03.jpg','L054');
+INSERT INTO loc_hotel_info VALUES('덕구 온천 호텔','4','111000','경상북도 울진군 북면 덕구온천로 924','Gyeongsangbuk04.jpg','L054');
+
+
+-- 'L055', '경남'
+INSERT INTO loc_hotel_info VALUES('스탠포드 호텔앤리조트 통영','5','132000','경상남도 통영시 도남동 도남로 347 ','Gyeongsangnam01.jpg','L055');
+INSERT INTO loc_hotel_info VALUES('고민가 KOMINKA','5','241000','경상남도 김해시 한림로46번길 64','Gyeongsangnam02.jpg','L055');
+INSERT INTO loc_hotel_info VALUES('아난티 남해','4','407000','경상남도 남해군 남면 남서대로1179번길 40-109','Gyeongsangnam03.jpg','L055');
+INSERT INTO loc_hotel_info VALUES('뉴 라온스테이 호텔','4','63000','경상남도 진주시 영천강로 166','Gyeongsangnam04.jpg','L055');
+
+-- 'L064', '제주'
+INSERT INTO loc_hotel_info VALUES('베스트웨스턴 제주호텔','5','104000','제주특별자치도 제주시 도령로 27','jeju01.jpg','L064');
+INSERT INTO loc_hotel_info VALUES('신라스테이 플러스 이호테우 ','5','153000','제주특별자치도 제주시 특별자치도 연대마을길 76','jeju02.jpg','L064');
+INSERT INTO loc_hotel_info VALUES('호텔 휘슬락 제주','4','101000','제주특별자치도 제주시 서부두2길 26','jeju03.jpg','L064');
+INSERT INTO loc_hotel_info VALUES('오션스위츠 제주 호텔','4','76500','제주특별자치도 제주시 삼도이동 탑동해안로 74','jeju04.jpg','L064');
+
+commit;

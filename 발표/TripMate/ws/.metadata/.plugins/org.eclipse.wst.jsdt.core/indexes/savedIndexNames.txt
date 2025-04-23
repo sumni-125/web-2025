@@ -1,0 +1,5 @@
+INDEX VERSION 1.4+C:\Users\user\Documents\javafullstack2025\06_MVC프로젝트\발표자료\TripMate\TripMate\ws\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+2538714668.index
+1839878131.index
+486631573.index
+261684780.index

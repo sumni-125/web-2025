@@ -1,0 +1,178 @@
+@charset "UTF-8";
+/* 기본 스타일 초기화 */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+/* 상단 타이틀 및 네비게이션 */
+.top {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.top h1 {
+	font-size: 40px;
+}
+
+.top i {
+	font-size: 50px;
+	vertical-align: middle;
+}
+
+.button {
+	display: flex;
+	justify-content: center;
+	gap: 150px;
+	margin-top: 30px;
+}
+
+.button button {
+	padding: 10px 15px;
+	font-size: 24px;
+	border-radius: 20px;
+	cursor: pointer;
+	border: none;
+}
+
+.button1 {
+	background-color: #fff18a;
+}
+
+.button2 {
+	background-color: #a5f1b0;
+}
+
+.button3 {
+	background-color: #71e5fa;
+}
+
+.button button:hover {
+	filter: brightness(110%);
+}
+
+/* 본문 레이아웃 */
+.bottom {
+	margin: 40px 0;
+	display: flex;
+	justify-content: center;
+}
+
+.content_wrap {
+	width: 80%;
+	max-width: 1200px;
+	border: 1px solid #ccc;
+	padding: 60px;
+	background: #eee;
+}
+
+.content {
+	width: 100%;
+	border-radius: 40px;
+	border: 1px solid #ccc;
+	padding: 30px;
+	background: white;
+}
+
+/* 제목 및 사람 선택 */
+.content_title {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid black;
+}
+
+.content_title h2 {
+	font-size: 20px;
+	padding-bottom: 20px;
+}
+
+.content_title span {
+	color: purple;
+}
+
+.person_select {
+	width: 200px;
+	padding: 8px;
+	border: 1px solid black;
+	border-radius: 4px;
+	font-size: 16px;
+	cursor: pointer;
+}
+
+/* 정산 내역 컨테이너 */
+.day_container {
+	margin-top: 10px;
+}
+
+.day {
+	display: none;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+/* 개별 정산 항목 */
+.personal_wrap {
+	width: 49%;
+	box-sizing: border-box;
+	border-radius: 8px;
+	padding: 10px;
+	background: #fff;
+}
+
+.section-header1 {
+	margin: 20px 0 10px;
+	font-weight: bold;
+	color: #e55c44;
+}
+
+.section-header2 {
+	margin: 20px 0 10px;
+	font-weight: bold;
+	color: #4caf50;
+}
+
+.give-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 18px 16px;
+	border-bottom: 1px solid #bdbdbd;
+}
+
+.give-item .info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.give-item .amount {
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.give-item.completed {
+	text-decoration: line-through;
+	color: #888;
+}
+
+.empty-text {
+	padding: 10px;
+	color: #777;
+}
+
+.complete-btn {
+	padding: 6px 12px;
+	background: #4caf50;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.complete-btn:disabled {
+	background: #9e9e9e;
+	cursor: default;
+}

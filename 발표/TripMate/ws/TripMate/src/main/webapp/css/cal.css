@@ -1,0 +1,82 @@
+@charset "UTF-8";
+
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+	font-size: 14px;
+	overflow: hidden;
+}
+
+.container {
+	display: flex;
+	height: 100vh;
+	overflow: hidden;
+}
+
+#calendar-container {
+	flex: 7.5;
+	height: 700px;
+	padding: 33px 44px;
+	box-sizing: border-box;
+}
+
+
+#info-panel {
+	flex: 2.5;
+	padding: 40px 0 0 60px;
+	box-sizing: border-box;
+	background-color: #f9f9f9;
+	border-left: 1px solid #ddd;
+}
+
+#info-panel h2{
+	font-size: 30px;
+	font-weight:bold;
+}
+
+
+.fc-header-toolbar {
+	padding-top: 1em;
+	padding-left: 1em;
+	padding-right: 1em;
+}
+
+#selected-dates {
+	font-weight: 600;
+	font-size: 20px;
+}
+
+.fc-daygrid-day-number {
+	pointer-events: none;
+}
+
+#next-button {
+	width: 280px;
+	border: none;
+	border-radius: 5px;
+	color: white;
+	font-weight: 500;
+	padding: 10px 20px;
+	font-size: 17px;
+	margin: 40px auto;
+	cursor: pointer;
+	background-color: #0095f6;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+#next-button:hover{
+		filter: brightness(110%);
+		transition: filter 0.2s;
+	}
+
+.fc-daygrid-day:hover {
+  background-color: rgba(33, 150, 243, 0.3) !important;
+  z-index: 2;
+  position: relative;
+  cursor:pointer;
+}
+
+
+}

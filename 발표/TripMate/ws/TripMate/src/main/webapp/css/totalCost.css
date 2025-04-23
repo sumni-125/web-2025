@@ -1,0 +1,150 @@
+@charset "UTF-8";
+/* 공통 레이아웃 */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: sans-serif;
+}
+
+.top {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.top h1 {
+	font-size: 40px;
+}
+
+.top i {
+	font-size: 50px;
+	vertical-align: middle;
+}
+
+.button {
+	display: flex;
+	justify-content: center;
+	gap: 150px;
+	margin-top: 30px;
+}
+
+.button button {
+	padding: 10px 15px;
+	font-size: 24px;
+	border: none;
+	border-radius: 20px;
+	cursor: pointer;
+}
+
+.button1 {
+	background: #fff18a;
+}
+
+.button2 {
+	background: #a5f1b0;
+}
+
+.button3 {
+	background: #71e5fa;
+}
+
+.button button:hover {
+	filter: brightness(110%);
+}
+
+.bottom {
+	margin: 40px 0;
+	display: flex;
+	justify-content: center;
+}
+
+.content_wrap {
+	width: 80%;
+	max-width: 1200px;
+	border: 1px solid #ccc;
+	padding: 60px;
+	background: #eee;
+}
+
+.content {
+	width: 100%;
+	border-radius: 40px;
+	border: 1px solid #ccc;
+	padding: 30px;
+	background: white;
+}
+
+.content_title {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid black;
+}
+
+.content_title h2 {
+	font-size: 20px;
+	padding-bottom: 20px;
+}
+
+.content_title span {
+	color: purple;
+}
+
+.person_select {
+	width: 200px;
+	padding: 8px;
+	font-size: 16px;
+	border: 1px solid #000;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+/* 아코디언 스타일 */
+details {
+	margin-top: 16px;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	background: #fafafa;
+}
+
+summary {
+	padding: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+details[open] summary {
+	background: #e8f5e9;
+}
+
+.detail-list {
+	padding: 0 12px 12px;
+}
+
+.detail-list table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 8px;
+}
+
+.detail-list th, .detail-list td {
+	border: 1px solid #ddd;
+	padding: 6px;
+	text-align: center;
+}
+
+.detail-list th {
+	background: #f0f0f0;
+}
+
+.grand-total {
+	text-align: center;
+	font-size: 25px;
+	font-weight: bold;
+	background-color: #E5E55B;
+	margin-top: 20px;
+	padding: 16px;
+}

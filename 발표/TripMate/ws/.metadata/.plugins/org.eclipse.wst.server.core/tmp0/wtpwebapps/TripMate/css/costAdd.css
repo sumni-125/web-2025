@@ -1,0 +1,137 @@
+@charset "UTF-8";
+/* 기본 스타일 */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+/* 상단부분 */
+.top {
+	text-align: center;
+	margin-top: 20px;
+}
+
+/* 상단 제목 */
+.top h1 {
+	font-size: 40px;
+}
+
+.top i {
+	font-size: 50px;
+	vertical-align: middle;
+}
+
+/* 중간부분(내용) */
+.bottom {
+	margin: 40px 0;
+	display: flex;
+	justify-content: center;
+}
+
+/* 컨텐츠 겉면 */
+.content_wrap {
+	width: 80%;
+	min-width: 800px;
+	max-width: 1000px;
+	border: 1px solid #ccc;
+	padding: 60px;
+	background: #eee;
+}
+
+/* 컨텐츠 박스 */
+.content {
+	padding: 30px;
+	background: #fff;
+	border-radius: 40px;
+}
+
+/* 컨텐츠 제목 */
+.content h3 {
+	margin-bottom: 10px;
+	font-size: 22px;
+}
+
+.subtitle {
+	color: purple;
+}
+
+/* 라벨 스타일 */
+form label {
+	display: block;
+	margin-bottom: 12px;
+	font-size: 14px;
+}
+
+form input, form select {
+	width: 100%;
+	padding: 8px;
+	margin-top: 4px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+form select {
+	cursor: pointer;
+}
+
+form span, fieldset.category legend {
+	font-size: 16px;
+	font-weight: 500;
+	margin-bottom: 8px;
+}
+
+/* 카테고리 스타일 */
+.category {
+	margin-top: 8px;
+	margin-bottom: 16px;
+	justify-content: space-between;
+	display: flex;
+}
+
+.category label {
+	margin-left: 20px;
+	margin-right: 20px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.category i {
+	font-size: 50px;
+	margin-bottom: 4px;
+}
+
+.fas {
+	font-size: 100px;
+	display: flex;
+}
+
+/* 하단 버튼 */
+.bottom_button button, .back {
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 17px;
+	font-weight: bold;
+}
+
+.back {
+	background-color: #88F32A;
+	margin-right: 20px;
+	text-decoration: none;
+}
+
+.commit {
+	background-color: #ff8a80;
+}
+
+.bottom_button button:hover, .back:hover {
+	filter: brightness(110%);
+	text-decoration: none;
+	color: black;
+}
+
+.bottom_button {
+	text-align: center;
+}

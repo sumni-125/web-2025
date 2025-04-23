@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>여행 일정 등록 (지도 기반)</title>
+    <!-- services 라이브러리 포함! -->
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0bcfed5a7253952f96e994ae541474a4&libraries=services"></script>
+</head>
+<body>
+
+<h3>🗺️ 지도에서 여행 위치를 클릭해 일정을 추가하세요!</h3><button onclick="sendSchedule()">  여행 등록하기</button>
+
+<div id="map" style="width:100%;height:400px;"></div>
+
+
+<script>
+// 여행 일정 객체
+const tripSchedule = {
+    destination: "제주도",
+    start_date: "2025-05-03",
+    end_date: "2025-05-06",
+    plans: []
+};
+
+// 지도 생성 (level 5로 확대)
+const container = document.getElementById('map');
+const options = { 
+    center: new kakao.maps.LatLng(33.450701, 126.570667), // 제주도 중심
+    level: 6 // level 값 낮춤 (더 확대된 상태로 보임)
+};
+const map = new kakao.maps.Map(container, options);
+
+// 클릭 이벤트
+kakao.maps.event.addListener(map, 'click', function(mouseEvent) {        
+    const latlng = mouseEvent.latLng;
+
+    const geocoder = new kakao.maps.services.Geocoder();
+
+    geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+            const address = result[0].address.address_name;
+
+            const day = prompt("몇 일차 일정인가요?"); 
+
+            const newPlan = {
+                day: parseInt(day),
+                latitude: latlng.getLat(),
+                longitude: latlng.getLng(),
+                address: address
+            };
+
+            tripSchedule.plans.push(newPlan);
+
+            alert(` 일정 추가 완료!\n[일차]: ${day}\n[주소]: ${address}\n[위도]: ${latlng.getLat()}\n[경도]: ${latlng.getLng()}`);
+            console.log("  현재 저장된 일정 목록:", tripSchedule.plans);
+        } else {
+            alert("  주소를 찾을 수 없습니다.");
+        }
+    });    
+});
+
+// 서버로 전송
+function sendSchedule() {
+    fetch('/jsonDB/tripScheduleSave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tripSchedule)
+    })
+    .then(response => response.text())
+    .then(data => alert('서버 응답: ' + data))
+    .catch(error => console.error('에러:', error));
+}
+</script>
+
+</body>
+</html>

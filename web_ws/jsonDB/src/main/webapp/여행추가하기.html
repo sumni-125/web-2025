@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>여행 일정 등록</title>
+</head>
+<body>
+
+<script>
+// 전역 JSON 객체: 여행 계획 누적용
+const tripSchedule = {
+    destination: "제주도",
+    start_date: "2025-05-03",
+    end_date: "2025-05-06",
+    plans: []  // 계속 여기에 push!
+};
+
+// 일정을 추가하는 함수
+function addPlan() {
+    const day = prompt("몇 일차인가요?");
+    const place = prompt("장소는 어디인가요?");
+    const activity = prompt("활동 내용을 입력하세요!");
+
+    // 새 일정 객체 생성
+    const newPlan = {
+        day: parseInt(day),
+        place: place,
+        activity: activity
+    };
+
+    // plans 배열에 추가
+    tripSchedule.plans.push(newPlan);
+
+    console.log("현재 여행 일정 목록:", tripSchedule.plans);
+    alert("일정이 추가되었습니다!");
+}
+
+// 서버로 전송하는 함수
+function sendSchedule() {
+    fetch('/jsonDB/tripScheduleSave0', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(tripSchedule)
+    })
+    .then(response => response.text())
+    .then(data => alert('서버 응답: ' + data))
+    .catch(error => console.error('에러:', error));
+}
+</script>
+
+<h3> 여행 일정 관리</h3>
+<button onclick="addPlan()">➕ 제주도 여행  일정 추가( 2025-05-03 ~ 2025-05-06 ), 일정을 추가해 주세요 </button>
+<button onclick="sendSchedule()"> 여행등록하기</button>
+
+</body>
+</html>

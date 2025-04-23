@@ -1,0 +1,178 @@
+@charset "UTF-8";
+/* 기본 스타일 */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+/* 상단부분(제목 및 버튼) */
+.top {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.top h1 {
+	font-size: 40px;
+}
+
+.top i {
+	font-size: 50px;
+	vertical-align: middle;
+}
+
+.button {
+	display: flex;
+	justify-content: center;
+	gap: 150px;
+	margin-top: 30px;
+}
+
+.button button {
+	padding: 10px 15px;
+	font-size: 24px;
+	border-radius: 20px;
+	cursor: pointer;
+	border: none;
+}
+
+.button1 {
+	background-color: #fff18a;
+}
+
+.button2 {
+	background-color: #a5f1b0;
+}
+
+.button3 {
+	background-color: #71e5fa;
+}
+
+.button button:hover {
+	filter: brightness(110%);
+}
+
+/* 중간부분(내용) */
+.bottom {
+	margin: 40px 0;
+	display: flex;
+	justify-content: center;
+}
+
+.content_wrap {
+	width: 80%;
+	max-width: 1200px;
+	border: 1px solid #ccc;
+	padding: 60px;
+	background: #eee;
+}
+
+.content {
+	width: 100%;
+	border-radius: 40px;
+	border: 1px solid #ccc;
+	padding: 30px;
+	background: white;
+}
+
+.content_title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid black;
+}
+
+.content_title h2 {
+	padding-bottom: 20px;
+	font-size: 20px;
+}
+
+.content_title span {
+	color: purple;
+}
+
+/* 날짜 선택바 */
+.day_select {
+	width: 200px;
+	padding: 8px;
+	border: 1px solid black;
+	border-radius: 4px;
+}
+
+.button4 {
+	width: 250px;
+	padding: 8px;
+	text-align: center;
+	border: none;
+	background: #3544E8;
+	color: white;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.button4:hover {
+	background: #4251fa;
+}
+
+/* 일별 지출 내역 컨테이너 */
+.day_container {
+	display: flex;
+	justify-content: space-between;
+}
+
+.day {
+	width: 100%;
+	min-height: 400px;
+	padding: 20px;
+	display: none; /* 기본 숨김 */
+}
+
+.day p {
+	font-size: 20px;
+	margin-bottom: 12px;
+}
+
+.cost_item {
+	min-width: 250px;
+	width: calc(( 100% - 40px)/3);
+	display: inline-flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 16px;
+	margin: 0 5px 20px;
+}
+
+.left {
+	display: flex;
+	align-items: center;
+}
+
+.fas {
+	font-size: 30px;
+	color: #388e3c;
+	margin-right: 12px;
+}
+
+.category {
+	font-size: 13px;
+	color: #6B6B6B;
+}
+
+.location {
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.right {
+	text-align: right;
+}
+
+.amount {
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.method {
+	font-size: 13px;
+	color: #777;
+	text-align: center;
+}
